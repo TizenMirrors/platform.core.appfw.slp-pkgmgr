@@ -101,6 +101,7 @@ typedef struct _package_manager_pkg_detail_info_t {
 	char pkg_name[PKG_NAME_STRING_LEN_MAX];
 	char pkgid[PKG_NAME_STRING_LEN_MAX];
 	char version[PKG_VERSION_STRING_LEN_MAX];
+	char api_version[PKG_VERSION_STRING_LEN_MAX];
 	char pkg_description[PKG_VALUE_STRING_LEN_MAX];
 	char min_platform_version[PKG_VERSION_STRING_LEN_MAX];
 	time_t installed_time;	/* installed time it must be GMT+0 time */
