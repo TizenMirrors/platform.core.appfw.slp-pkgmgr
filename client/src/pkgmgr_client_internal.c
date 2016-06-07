@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>
 #include <xdgmime.h>
 
 #include <unistd.h>
@@ -322,68 +323,58 @@ package_manager_pkg_info_t *_pkg_malloc_appinfo(int num)
 static pkg_plugin_set *plugin_set_list[24] = { 0, };
 
 pkg_plugin_set *_pkg_plugin_load_library(const char *pkg_type,
-					 const char *library_path)
+		const char *library_path)
 {
-	void *library_handle = NULL;
-	int i = 0;
-
-	/* _pkg_plugin_on_load onload = NULL; */
-	bool(*on_load) (pkg_plugin_set *plugin);
+	void *library_handle;
+	int i;
+	bool (*on_load)(pkg_plugin_set *plugin);
 
 	if (library_path == NULL) {
-		ERR("pkg library path = [%s] \n", library_path);
+		ERR("pkg library path = [%s]", library_path);
 		return NULL;
 	}
 
 	if ((library_handle = dlopen(library_path, RTLD_LAZY)) == NULL) {
-		ERR("dlopen is failed library_path[%s]\n", library_path);
+		ERR("dlopen is failed library_path[%s]", library_path);
 		return NULL;
 	}
 
 	if ((on_load = dlsym(library_handle, "pkg_plugin_on_load")) == NULL ||
-	    dlerror() != NULL) {
-		ERR("can not find symbol \n");
+			dlerror() != NULL) {
+		ERR("can not find symbol");
 		dlclose(library_handle);
 		return NULL;
 	}
 
 	for (i = 0; plugin_set_list[i]; i++) {
 		if (strcmp(plugin_set_list[i]->pkg_type, pkg_type) == 0) {
-			DBG("already loaded [%s] is done well \n",
-			      library_path);
-			goto END;
+			DBG("already loaded [%s]", library_path);
+			return plugin_set_list[i];
 		}
 	}
 
-	plugin_set_list[i] = (pkg_plugin_set *) malloc(sizeof(pkg_plugin_set));
+	plugin_set_list[i] = (pkg_plugin_set *)calloc(1, sizeof(pkg_plugin_set));
 	if (plugin_set_list[i] == NULL) {
-		ERR("malloc of the plugin_set_list element is failed \n");
+		ERR("malloc of the plugin_set_list element is failed");
 		dlclose(library_handle);
 		return NULL;
 	}
 
-	memset(plugin_set_list[i], 0x0, sizeof(pkg_plugin_set));
-
 	if (on_load(plugin_set_list[i]) != 0) {
-		ERR("on_load is failed \n");
-
-		dlclose(library_handle);
-
+		ERR("pkg_plugin_on_load failed");
 		free(plugin_set_list[i]);
+		dlclose(library_handle);
 		plugin_set_list[i] = NULL;
-
 		return NULL;
 	}
 
 	plugin_set_list[i]->plugin_handle = library_handle;
-	strncpy(plugin_set_list[i]->pkg_type, pkg_type,
-		PKG_TYPE_STRING_LEN_MAX - 1);
+	snprintf(plugin_set_list[i]->pkg_type,
+			sizeof(plugin_set_list[i]->pkg_type), "%s", pkg_type);
 
-	DBG("load library [%s] is done well \n", library_path);
+	DBG("library [%s] is loaded", library_path);
 
- END:
 	return plugin_set_list[i];
-
 }
 
 int _pkg_plugin_get_library_path(const char *pkg_type, char *library_path)
@@ -437,23 +428,23 @@ int _pkg_plugin_get_library_path(const char *pkg_type, char *library_path)
 
 pkg_plugin_set *_package_manager_load_library(const char *pkg_type)
 {
-	char package_path[1024] = { 0 };
-	pkg_plugin_set *plugin_set = NULL;
+	char package_path[1024] = { 0, };
+	pkg_plugin_set *plugin_set;
 
 	if (pkg_type == NULL) {
-		ERR("can not load library - pkg_type is null\n");
+		ERR("cannot load library - pkg_type is null");
 		return NULL;
 	}
 
-	if (_pkg_plugin_get_library_path(pkg_type, package_path) ==
-	    PKGMGR_R_OK) {
-		plugin_set = _pkg_plugin_load_library(pkg_type, package_path);
-		if (plugin_set == NULL) {
-			ERR("can not load library \n");
-			return NULL;
-		}
-	} else {
-		ERR("can not find path \n");
+	if (_pkg_plugin_get_library_path(pkg_type, package_path) !=
+			PKGMGR_R_OK) {
+		ERR("cannot find path");
+		return NULL;
+	}
+
+	plugin_set = _pkg_plugin_load_library(pkg_type, package_path);
+	if (plugin_set == NULL) {
+		ERR("cannot load library");
 		return NULL;
 	}
 

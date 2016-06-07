@@ -2108,3 +2108,64 @@ API int pkgmgr_client_get_restriction_mode(pkgmgr_client *pc, int *mode)
 {
 	return pkgmgr_client_usr_get_restriction_mode(pc, mode, _getuid());
 }
+
+API pkgmgr_info *pkgmgr_client_check_pkginfo_from_file(const char *pkg_path)
+{
+	int ret;
+	pkg_plugin_set *plugin_set;
+	package_manager_pkg_detail_info_t *info;
+	char *pkg_type;
+
+	if (pkg_path == NULL) {
+		ERR("invalid parameter");
+		return NULL;
+	}
+
+	pkg_type = __get_type_from_path(pkg_path);
+	if (pkg_type == NULL) {
+		ERR("cannot get pkg type");
+		return NULL;
+	}
+
+	plugin_set = _package_manager_load_library(pkg_type);
+	if (plugin_set == NULL) {
+		ERR("failed to load library for %s", pkg_type);
+		free(pkg_type);
+		return NULL;
+	}
+
+	info = calloc(1, sizeof(package_manager_pkg_detail_info_t));
+	if (info == NULL) {
+		ERR("out of memory");
+		free(pkg_type);
+		return NULL;
+	}
+
+	ret = plugin_set->get_pkg_detail_info_from_package(pkg_path, info);
+	if (ret) {
+		ERR("get_pkg_detail_info_from_package failed");
+		free(info);
+		free(pkg_type);
+		return NULL;
+	}
+
+	free(pkg_type);
+
+	return (pkgmgr_info *)info;
+}
+
+API int pkgmgr_client_free_pkginfo(pkgmgr_info *info)
+{
+	package_manager_pkg_detail_info_t *pkg_info =
+		(package_manager_pkg_detail_info_t *)info;
+
+	if (info == NULL) {
+		ERR("invalid parameter");
+		return PKGMGR_R_EINVAL;
+	}
+
+	free(pkg_info->icon_buf);
+	free(pkg_info);
+
+	return PKGMGR_R_OK;
+}
