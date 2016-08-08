@@ -14,6 +14,8 @@ Source1004: %{name}-installer.manifest
 Source1005: %{name}-installer-devel.manifest
 Source1006: %{name}-types-devel.manifest
 Source1007: %{name}.conf
+Source1008: %{name}-installer-signal-agent.service
+Source1009: %{name}-installer-signal-agent.socket
 Requires(post): /usr/sbin/useradd
 
 BuildRequires:  cmake
@@ -31,6 +33,7 @@ BuildRequires:  pkgconfig(security-manager)
 BuildRequires:  pkgconfig(xdgmime)
 BuildRequires:  pkgconfig(db-util)
 BuildRequires:  pkgconfig(libsmack)
+BuildRequires:  pkgconfig(libsystemd-daemon)
 BuildRequires:  pkgmgr-info-parser-devel
 BuildRequires:  pkgmgr-info-parser
 BuildRequires:  fdupes
@@ -99,6 +102,11 @@ rm -f %{buildroot}%{_libdir}/libpkgmgr_parser_lib_sample.so
 mkdir -p %{buildroot}%{_tmpfilesdir}/
 install -m 0644 %{SOURCE1007} %{buildroot}%{_tmpfilesdir}/pkgmgr.conf
 
+mkdir -p %{buildroot}%{_unitdir_user}/sockets.target.wants
+install -m 0644 %{SOURCE1008} %{buildroot}%{_unitdir_user}/pkgmgr-installer-signal-agent.service
+install -m 0644 %{SOURCE1009} %{buildroot}%{_unitdir_user}/pkgmgr-installer-signal-agent.socket
+ln -sf ../alarm_session_agent.socket %{buildroot}%{_unitdir_user}/sockets.target.wants/pkgmgr-installer-signal-agent.socket
+
 mkdir -p %{buildroot}%{_sysconfdir}/package-manager/backend
 mkdir -p %{buildroot}%{_sysconfdir}/package-manager/backendlib
 mkdir -p %{buildroot}%{_sysconfdir}/opt/upgrade
@@ -160,6 +168,10 @@ HOME="$saveHOME"
 %manifest %{name}-installer.manifest
 %defattr(-,root,root,-)
 %{_libdir}/libpkgmgr_installer.so.*
+%{_bindir}/pkgmgr-installer-signal-agent
+%{_unitdir_user}/pkgmgr-installer-signal-agent.service
+%{_unitdir_user}/pkgmgr-installer-signal-agent.socket
+%{_unitdir_user}/sockets.target.wants/pkgmgr-installer-signal-agent.socket
 
 %files installer-devel
 %manifest %{name}-installer-devel.manifest

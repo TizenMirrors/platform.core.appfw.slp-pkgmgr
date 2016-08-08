@@ -30,6 +30,11 @@ foreach(flag ${installer_pkgs_CFLAGS})
 	set(installer_pkgs_CFLAGS_str "${installer_pkgs_CFLAGS_str} ${flag}")
 endforeach()
 
+PKG_CHECK_MODULES(AGENT_DEPS REQUIRED glib-2.0 gio-2.0 dlog libsystemd-daemon)
+FOREACH(FLAG ${AGENT_DEPS_CFLAGS})
+	SET(AGENT_CFLAGS "${AGENT_CFLAGS} ${FLAG}")
+ENDFOREACH()
+
 ### Build modules
 
 ## pkgmgr_installer object (by youmin.ha)
@@ -48,3 +53,10 @@ INSTALL(TARGETS pkgmgr_installer DESTINATION ${LIB_INSTALL_DIR} COMPONENT Runtim
 INSTALL(FILES pkgmgr_installer.h DESTINATION include/pkgmgr)
 INSTALL(FILES pkgmgr_installer_info.h DESTINATION include/pkgmgr)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/pkgmgr-installer.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
+
+## pkgmgr_installer_signal_agent
+ADD_EXECUTABLE(pkgmgr-installer-signal-agent pkgmgr_installer_signal_agent.c)
+SET_TARGET_PROPERTIES(pkgmgr-installer-signal-agent PROPERTIES COMPILE_FLAGS "${AGENT_CFLAGS}")
+TARGET_LINK_LIBRARIES(pkgmgr-installer-signal-agent ${AGENT_DEPS_LDFLAGS})
+
+INSTALL(TARGETS pkgmgr-installer-signal-agent DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
