@@ -20,13 +20,17 @@
  *
  */
 
-
-
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
 #include <getopt.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/un.h>
 
+#include <glib.h>
 #include <gio/gio.h>
 
 #include "pkgmgr_installer.h"
@@ -167,6 +171,166 @@ static int __send_signal_for_event(pkgmgr_installer *pi, const char *pkg_type,
 		g_error_free(err);
 		return -1;
 	}
+
+	return 0;
+}
+
+static int __send_signal_to_agent(uid_t uid, void *data, size_t len)
+{
+	int fd;
+	struct sockaddr_un sa;
+	int r;
+
+	fd = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0);
+	if (fd == -1) {
+		ERR("failed to create socket: %d", errno);
+		return -1;
+	}
+
+	sa.sun_family = AF_UNIX;
+	snprintf(sa.sun_path, sizeof(sa.sun_path), "/run/pkgmgr/agent/%d", uid);
+
+	r = connect(fd, (struct sockaddr *)&sa, sizeof(sa));
+	if (r == -1) {
+		ERR("failed to connect socket(%s): %d", sa.sun_path, errno);
+		close(fd);
+		return -1;
+	}
+
+	r = send(fd, data, len, 0);
+	if (r < 0) {
+		ERR("failed to send data: %d", errno);
+		close(fd);
+		return -1;
+	}
+
+	close(fd);
+
+	return 0;
+}
+
+/* TODO: it should be refactored */
+static int __send_app_signal_for_event_for_uid(pkgmgr_installer *pi, uid_t uid,
+		const char *pkg_type, const char *pkgid, const char *appid,
+		const char *key, const char *val)
+{
+	char *sid;
+	const char *name;
+	size_t name_size;
+	GVariant *gv;
+	gsize gv_len;
+	gpointer gv_data;
+	void *data;
+	void *ptr;
+	size_t data_len;
+
+	if (!pi || pi->conn == NULL)
+		return -1;
+
+	sid = pi->session_id;
+	if (!sid)
+		sid = "";
+
+	data_len = sizeof(size_t) + sizeof(gsize);
+
+	name = __get_signal_name(pi, key);
+	if (name == NULL) {
+		ERR("unknown signal type");
+		return -1;
+	}
+	/* including null byte */
+	name_size = strlen(name) + 1;
+	data_len += name_size;
+
+	gv = g_variant_new("(ussssss)", pi->target_uid, sid,
+			pkg_type, pkgid, appid, key, val);
+	gv_len = g_variant_get_size(gv);
+	gv_data = g_malloc(gv_len);
+	g_variant_store(gv, gv_data);
+	g_variant_unref(gv);
+	data_len += gv_len;
+
+	data = malloc(data_len);
+	ptr = data;
+	memcpy(ptr, &name_size, sizeof(size_t));
+	ptr += sizeof(size_t);
+	memcpy(ptr, &gv_len, sizeof(gsize));
+	ptr += sizeof(gsize);
+	memcpy(ptr, name, name_size);
+	ptr += name_size;
+	memcpy(ptr, gv_data, gv_len);
+
+	if (__send_signal_to_agent(uid, data, data_len)) {
+		ERR("failed to send signal to agent");
+		g_free(data);
+		return -1;
+	}
+
+	g_free(gv_data);
+	free(data);
+
+	return 0;
+}
+
+/* TODO: it should be refactored */
+static int __send_signal_for_event_for_uid(pkgmgr_installer *pi, uid_t uid,
+		const char *pkg_type, const char *pkgid,
+		const char *key, const char *val)
+{
+	char *sid;
+	const char *name;
+	size_t name_size;
+	GVariant *gv;
+	gsize gv_len;
+	gpointer gv_data;
+	void *data;
+	void *ptr;
+	size_t data_len;
+
+	if (!pi || pi->conn == NULL)
+		return -1;
+
+	sid = pi->session_id;
+	if (!sid)
+		sid = "";
+
+	data_len = sizeof(size_t) + sizeof(gsize);
+
+	name = __get_signal_name(pi, key);
+	if (name == NULL) {
+		ERR("unknown signal type");
+		return -1;
+	}
+	/* including null byte */
+	name_size = strlen(name) + 1;
+	data_len += name_size;
+
+	gv = g_variant_new("(ussssss)", pi->target_uid, sid,
+			pkg_type, pkgid, "", key, val);
+	gv_len = g_variant_get_size(gv);
+	gv_data = g_malloc(gv_len);
+	g_variant_store(gv, gv_data);
+	g_variant_unref(gv);
+	data_len += gv_len;
+
+	data = malloc(data_len);
+	ptr = data;
+	memcpy(ptr, &name_size, sizeof(size_t));
+	ptr += sizeof(size_t);
+	memcpy(ptr, &gv_len, sizeof(gsize));
+	ptr += sizeof(gsize);
+	memcpy(ptr, name, name_size);
+	ptr += name_size;
+	memcpy(ptr, gv_data, gv_len);
+
+	if (__send_signal_to_agent(uid, data, data_len)) {
+		ERR("failed to send signal to agent");
+		g_free(data);
+		return -1;
+	}
+
+	g_free(gv_data);
+	free(data);
 
 	return 0;
 }
@@ -580,6 +744,42 @@ pkgmgr_installer_send_signal(pkgmgr_installer *pi,
 		pi->request_type = PKGMGR_REQ_UPGRADE;
 
 	r = __send_signal_for_event(pi, pkg_type, pkgid, key, val);
+
+	return r;
+}
+
+API int pkgmgr_installer_send_app_signal_for_uid(pkgmgr_installer *pi,
+		uid_t uid, const char *pkg_type, const char *pkgid,
+		const char *appid, const char *key, const char *val)
+{
+	int r = 0;
+
+	if (!pi->conn) {
+		ERR("connection is NULL");
+		return -1;
+	}
+
+	r = __send_app_signal_for_event_for_uid(pi, uid, pkg_type, pkgid, appid, key, val);
+
+	return r;
+}
+
+API int pkgmgr_installer_send_signal_for_uid(pkgmgr_installer *pi,
+		uid_t uid, const char *pkg_type, const char *pkgid,
+		const char *key, const char *val)
+{
+	int r = 0;
+
+	if (!pi->conn) {
+		ERR("connection is NULL");
+		return -1;
+	}
+
+	if (strcmp(key, PKGMGR_INSTALLER_START_KEY_STR) == 0 &&
+			strcmp(val, PKGMGR_INSTALLER_UPGRADE_EVENT_STR) == 0)
+		pi->request_type = PKGMGR_REQ_UPGRADE;
+
+	r = __send_signal_for_event_for_uid(pi, uid, pkg_type, pkgid, key, val);
 
 	return r;
 }
