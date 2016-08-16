@@ -26,13 +26,15 @@
 
 #include <glib.h>
 
+#include "package-manager.h"
+
 typedef struct comm_client comm_client;
 typedef void (*status_cb) (void *cb_data, uid_t target_uid, const char *req_id,
 			   const char *pkg_type, const char *pkgid,
 			   const char *appid,    const char *key,
 			   const char *val);
 
-comm_client *comm_client_new(void);
+comm_client *comm_client_new(client_type type);
 int comm_client_free(comm_client *cc);
 
 int comm_client_request(comm_client *cc, const char *method, GVariant *params, GVariant **result);

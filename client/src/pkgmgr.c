@@ -823,7 +823,7 @@ static int __change_op_cb_for_getsize(pkgmgr_client *pc)
 	mpc->status_type = PKGMGR_CLIENT_STATUS_GET_SIZE;
 
 
-	mpc->info.request.cc = comm_client_new();
+	mpc->info.request.cc = comm_client_new(PC_REQUEST);
 	retvm_if(mpc->info.request.cc == NULL, PKGMGR_R_ERROR, "client creation failed");
 
 	ret = comm_client_set_status_callback(COMM_STATUS_BROADCAST_GET_SIZE, mpc->info.request.cc, __operation_callback, pc);
@@ -860,7 +860,7 @@ static int __change_op_cb_for_enable_disable(pkgmgr_client *pc, bool is_disable)
 		mpc->status_type = PKGMGR_CLIENT_STATUS_ENABLE_APP;
 
 
-	mpc->info.request.cc = comm_client_new();
+	mpc->info.request.cc = comm_client_new(PC_REQUEST);
 	retvm_if(mpc->info.request.cc == NULL, PKGMGR_R_ERROR, "client creation failed");
 
 	if (is_disable)
@@ -945,13 +945,13 @@ API pkgmgr_client *pkgmgr_client_new(client_type ctype)
 	pc->tep_path = NULL;
 
 	if (pc->ctype == PC_REQUEST) {
-		pc->info.request.cc = comm_client_new();
+		pc->info.request.cc = comm_client_new(PC_REQUEST);
 		trym_if(pc->info.request.cc == NULL, "client creation failed");
 
 		ret = comm_client_set_status_callback(COMM_STATUS_BROADCAST_ALL, pc->info.request.cc, __operation_callback, pc);
 		trym_if(ret < 0L, "comm_client_set_status_callback() failed - %d", ret);
 	} else if (pc->ctype == PC_LISTENING) {
-		pc->info.listening.cc = comm_client_new();
+		pc->info.listening.cc = comm_client_new(PC_LISTENING);
 		trym_if(pc->info.listening.cc == NULL, "client creation failed");
 
 		ret = comm_client_set_status_callback(COMM_STATUS_BROADCAST_ALL, pc->info.listening.cc, __status_callback, pc);
@@ -1078,7 +1078,7 @@ static int __change_op_cb_for_enable_disable_splash_screen(pkgmgr_client *pc,
 	else
 		mpc->status_type = PKGMGR_CLIENT_STATUS_DISABLE_APP_SPLASH_SCREEN;
 
-	mpc->info.request.cc = comm_client_new();
+	mpc->info.request.cc = comm_client_new(PC_REQUEST);
 	if (mpc->info.request.cc == NULL) {
 		ERR("client creation failed");
 		return PKGMGR_R_ENOMEM;
@@ -1802,7 +1802,7 @@ API int pkgmgr_client_set_status_type(pkgmgr_client *pc, int status_type)
 	mpc->ctype = PC_LISTENING;
 	mpc->status_type = status_type;
 
-	mpc->info.listening.cc = comm_client_new();
+	mpc->info.listening.cc = comm_client_new(PC_LISTENING);
 	retvm_if(mpc->info.listening.cc == NULL, PKGMGR_R_EINVAL, "client creation failed");
 
 	if ((mpc->status_type & PKGMGR_CLIENT_STATUS_INSTALL) == PKGMGR_CLIENT_STATUS_INSTALL) {

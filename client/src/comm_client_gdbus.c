@@ -147,6 +147,25 @@ void _free_sig_cb_data(void *data)
 	free(sig_cb_data);
 }
 
+#define REGULAR_USER 5000
+static int _is_system_user(void)
+{
+	uid_t uid = getuid();
+
+	if (uid < REGULAR_USER)
+		return 1;
+	else
+		return 0;
+}
+
+static GBusType _get_bus_type(client_type type)
+{
+	if (type == PC_REQUEST || _is_system_user())
+		return G_BUS_TYPE_SYSTEM;
+	else
+		return G_BUS_TYPE_SESSION;
+}
+
 /*******************
  * API description
  */
@@ -154,7 +173,7 @@ void _free_sig_cb_data(void *data)
 /**
  * Create a new comm_client object
  */
-comm_client *comm_client_new(void)
+comm_client *comm_client_new(client_type type)
 {
 	GError *error = NULL;
 	comm_client *cc = NULL;
@@ -170,7 +189,7 @@ comm_client *comm_client_new(void)
 	}
 
 	/* Connect to gdbus. Gets shared BUS */
-	cc->conn = g_bus_get_sync(G_BUS_TYPE_SYSTEM, NULL, &error);
+	cc->conn = g_bus_get_sync(_get_bus_type(type), NULL, &error);
 	if (error) {
 		ERR("gdbus connection error (%s)", error->message);
 		g_error_free(error);
