@@ -426,6 +426,7 @@ pkgmgr_installer_receive_request(pkgmgr_installer *pi,
 			break;
 
 		case 'u': /* uid */
+			g_target_uid = (uid_t)atoi(optarg);
 			pi->target_uid = (uid_t)atoi(optarg);
 			break;
 
