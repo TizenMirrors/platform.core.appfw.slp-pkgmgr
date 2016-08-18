@@ -569,93 +569,6 @@ static int __sync_process(const char *req_key)
 	return result;
 }
 
-static int __csc_process(const char *csc_path, char *result_path)
-{
-	int ret = 0;
-	int cnt = 0;
-	int count = 0;
-	int csc_fail = 0;
-	int fd = 0;
-	char *pkgtype = NULL;
-	char *des = NULL;
-	char buf[PKG_STRING_LEN_MAX] = {0,};
-	char type_buf[1024] = { 0 };
-	char des_buf[1024] = { 0 };
-	dictionary *csc = NULL;
-	FILE *file = NULL;
-
-	csc = iniparser_load(csc_path);
-	retvm_if(csc == NULL, PKGMGR_R_EINVAL, "cannot open parse file [%s]", csc_path);
-
-	file = fopen(result_path, "w");
-	tryvm_if(file == NULL, ret = PKGMGR_R_EINVAL, "cannot open result file [%s]", result_path);
-
-	count = iniparser_getint(csc, "csc packages:count", -1);
-	tryvm_if(count == 0, ret = PKGMGR_R_ERROR, "csc [%s] dont have packages", csc_path);
-
-	snprintf(buf, PKG_STRING_LEN_MAX, "[result]\n");
-	fwrite(buf, 1, strlen(buf), file);
-	snprintf(buf, PKG_STRING_LEN_MAX, "count = %d\n", count);
-	fwrite(buf, 1, strlen(buf), file);
-
-	for (cnt = 1 ; cnt <= count ; cnt++) {
-		snprintf(type_buf, PKG_STRING_LEN_MAX - 1, "csc packages:type_%03d", cnt);
-		snprintf(des_buf, PKG_STRING_LEN_MAX - 1, "csc packages:description_%03d", cnt);
-
-		pkgtype = iniparser_getstring(csc, type_buf, NULL);
-		des = iniparser_getstring(csc, des_buf, NULL);
-		ret = 0;
-
-		if (pkgtype == NULL) {
-			csc_fail++;
-			snprintf(buf, PKG_STRING_LEN_MAX, "%s = Fail to get pkgtype\n", type_buf);
-			fwrite(buf, 1, strlen(buf), file);
-			continue;
-		} else if (des == NULL) {
-			csc_fail++;
-			snprintf(buf, PKG_STRING_LEN_MAX, "%s = Fail to get description\n", des_buf);
-			fwrite(buf, 1, strlen(buf), file);
-			continue;
-		}
-
-		snprintf(buf, PKG_STRING_LEN_MAX, "type_%03d = %s\n", cnt, pkgtype);
-		fwrite(buf, 1, strlen(buf), file);
-		snprintf(buf, PKG_STRING_LEN_MAX, "description_%03d = %s\n", cnt, des);
-		fwrite(buf, 1, strlen(buf), file);
-
-		if (strcmp(pkgtype, "tpk") == 0) {
-			const char *ospinstaller_argv[] = { "/usr/bin/osp-installer", "-c", des, NULL };
-			ret = __xsystem(ospinstaller_argv);
-		} else if (strcmp(pkgtype, "wgt") == 0) {
-			const char *wrtinstaller_argv[] = { "/usr/bin/wrt-installer", "-c", des, NULL };
-			ret = __xsystem(wrtinstaller_argv);
-		} else {
-			csc_fail++;
-			ret = -1;
-		}
-
-		if (ret != 0) {
-			char *errstr = NULL;
-			__error_to_string(ret, &errstr);
-			snprintf(buf, PKG_STRING_LEN_MAX, "result_%03d = fail[%s]\n", cnt, errstr);
-		} else {
-			snprintf(buf, PKG_STRING_LEN_MAX, "result_%03d = success\n", cnt);
-		}
-
-		fwrite(buf, 1, strlen(buf), file);
-	}
-
-catch:
-	iniparser_freedict(csc);
-	if (file != NULL) {
-		fflush(file);
-		fd = fileno(file);
-		fsync(fd);
-		fclose(file);
-	}
-	return ret;
-}
-
 static int __get_size_process(pkgmgr_client *pc, const char *pkgid, uid_t uid,
 		pkgmgr_getsize_type get_type, pkgmgr_handler event_cb,
 		void *data)
@@ -1547,19 +1460,6 @@ API int pkgmgr_client_deactivate(pkgmgr_client *pc, const char *pkg_type,
 	return pkgmgr_client_usr_deactivate(pc, pkg_type, pkgid, _getuid());
 }
 
-/* TODO: deprecate? */
-API int pkgmgr_client_usr_activate_appv(pkgmgr_client *pc, const char *appid,
-		char *const argv[], uid_t uid)
-{
-	return pkgmgr_client_usr_activate_app(pc, appid, NULL, uid);
-}
-
-API int pkgmgr_client_activate_appv(pkgmgr_client *pc, const char *appid,
-		char *const argv[])
-{
-	return pkgmgr_client_usr_activate_app(pc, appid, NULL, _getuid());
-}
-
 API int pkgmgr_client_usr_activate_app(pkgmgr_client *pc, const char *appid,
 		pkgmgr_app_handler app_event_cb, uid_t uid)
 {
@@ -1935,19 +1835,6 @@ API int pkgmgr_client_usr_request_service(pkgmgr_request_service_type service_ty
 	retvm_if(service_type < 0, PKGMGR_R_EINVAL, "service type is error\n");
 
 	switch (service_type) {
-	case PM_REQUEST_CSC:
-		tryvm_if(custom_info == NULL, ret = PKGMGR_R_EINVAL, "custom_info is NULL\n");
-		tryvm_if(strlen(custom_info) >= PKG_STRING_LEN_MAX, ret = PKGMGR_R_EINVAL, "custom_info over PKG_STRING_LEN_MAX");
-		tryvm_if(data == NULL, ret = PKGMGR_R_EINVAL, "data is NULL\n");
-
-		ret = __csc_process(custom_info, (char *)data);
-		if (ret < 0)
-			ERR("__csc_process fail \n");
-		else
-			ret = PKGMGR_R_OK;
-
-		break;
-
 	case PM_REQUEST_MOVE:
 		tryvm_if(pkgid == NULL, ret = PKGMGR_R_EINVAL, "pkgid is NULL\n");
 		tryvm_if(pc == NULL, ret = PKGMGR_R_EINVAL, "pc is NULL\n");

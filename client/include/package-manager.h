@@ -307,11 +307,10 @@ typedef enum {
 } pkgmgr_move_type;
 
 typedef enum {
-	PM_REQUEST_CSC = 0,
-	PM_REQUEST_MOVE = 1,
-	PM_REQUEST_GET_SIZE = 2,
-	PM_REQUEST_KILL_APP = 3,
-	PM_REQUEST_CHECK_APP = 4,
+	PM_REQUEST_MOVE = 0,
+	PM_REQUEST_GET_SIZE = 1,
+	PM_REQUEST_KILL_APP = 2,
+	PM_REQUEST_CHECK_APP = 3,
 	PM_REQUEST_MAX
 } pkgmgr_request_service_type;
 
@@ -541,22 +540,6 @@ int pkgmgr_client_deactivate(pkgmgr_client *pc, const char *pkg_type,
 				 const char *pkgid);
 int pkgmgr_client_usr_deactivate(pkgmgr_client *pc, const char *pkg_type,
 				 const char *pkgid, uid_t uid);
-
-/**
- * @brief	This API activates package.
- *
- * This API is for package-manager client application.\n
- *
- * @param[in]	pc	pkgmgr_client
- * @param[in]	appid	applicaiton id
- * @param[in]	argv	argument vector
- * @return	request_id (>0) if success, error code(<0) if fail\n
- * @retval	PKGMGR_R_OK	success
- * @retval	PKGMGR_R_EINVAL	invalid argument
- * @retval	PKGMGR_R_ECOMM	communication error
-*/
-int pkgmgr_client_activate_appv(pkgmgr_client *pc, const char *appid, char *const argv[]);
-int pkgmgr_client_usr_activate_appv(pkgmgr_client *pc, const char *appid, char *const argv[], uid_t uid);
 
 /**
  * @brief	This API deactivates app.
