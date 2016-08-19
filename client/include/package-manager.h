@@ -120,6 +120,7 @@ extern "C" {
 /* new common error codes */
 /* since 3.0 */
 #define PKGCMD_ERRCODE_UNDEFINED_ERROR (-999)
+#define PKGCMD_ERRCODE_GLOBALSYMLINK_ERROR (-26)  /* Global symlink error */
 #define PKGCMD_ERRCODE_GRANT_PERMISSION_ERROR (-25)  /* Grant permission error */
 #define PKGCMD_ERRCODE_IMAGE_ERROR (-24)  /* Image error */
 #define PKGCMD_ERRCODE_UNZIP_ERROR (-23)  /* Unzip error */
@@ -147,6 +148,7 @@ extern "C" {
 #define PKGCMD_ERRCODE_ERROR (-1)  /* General error */
 #define PKGCMD_ERRCODE_OK (0)  /* Success */
 
+#define PKGCMD_ERRCODE_GLOBALSYMLINK_ERROR_STR "Global symlink error"
 #define PKGCMD_ERRCODE_GRANT_PERMISSION_ERROR_STR "Grant permission error"
 #define PKGCMD_ERRCODE_IMAGE_ERROR_STR "Image error"
 #define PKGCMD_ERRCODE_UNZIP_ERROR_STR "Unzip error"
