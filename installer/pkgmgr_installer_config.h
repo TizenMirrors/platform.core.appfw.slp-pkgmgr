@@ -20,46 +20,14 @@
  *
  */
 
-
-
-
-
 #ifndef __PACKAGE_INSTALLER_CONFIG_H__
 #define __PACKAGE_INSTALLER_CONFIG_H__
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#define PKGMGR_DBUS_SERVICE "org.tizen.pkgmgr"
+#define PKGMGR_DBUS_INTERFACE "org.tizen.pkgmgr"
+#define PKGMGR_DBUS_OBJECT_PATH "/org/tizen/pkgmgr"
 
-#define OPTVAL_PRELOAD 1000
-#define OPTVAL_FORCE_REMOVAL 1001
-
-/* Supported options */
-const char *short_opts = "k:l:i:d:c:m:t:o:r:p:s:b:e:M:y:u:w:D:A:q";
-const struct option long_opts[] = {
-	{ "session-id", 1, NULL, 'k' },
-	{ "license-path", 1, NULL, 'l' },
-	{ "install", 1, NULL, 'i' },
-	{ "uninstall", 1, NULL, 'd' },
-	{ "clear", 1, NULL, 'c' },
-	{ "move", 1, NULL, 'm' },
-	{ "move-type", 1, NULL, 't' },
-	{ "optional-data", 0, NULL, 'o' },
-	{ "reinstall", 0, NULL, 'r' },
-	{ "caller-pkgid", 1, NULL, 'p' },
-	{ "tep-path", 1, NULL, 'e' },
-	{ "tep-move", 1, NULL, 'M' },
-	{ "smack", 1, NULL, 's' },
-	{ "direct-manifest-install", 1, NULL, 'y' },
-	{ "mount-install", 1, NULL, 'w' },
-	{ "recovery", 1, NULL, 'b' },
-	{ "preload", 0, NULL, OPTVAL_PRELOAD },
-	{ "force-remove", 0, NULL, OPTVAL_FORCE_REMOVAL },
-	{ 0, 0, 0, 0 }	/* sentinel */
-};
-
-#ifdef __cplusplus
-}
-#endif
+#define PKGMGR_INSTALLER_DBUS_INTERFACE "org.tizen.pkgmgr.signal"
+#define PKGMGR_INSTALLER_DBUS_OBJECT_PATH "/org/tizen/pkgmgr/signal"
 
 #endif				/* __PACKAGE_INSTALLER_CONFIG_H__ */

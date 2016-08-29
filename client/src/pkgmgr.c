@@ -41,7 +41,6 @@
 #include "pkgmgr-internal.h"
 #include "pkgmgr-debug.h"
 #include "comm_client.h"
-#include "comm_config.h"
 
 /* API export macro */
 #ifndef API
@@ -739,7 +738,7 @@ static int __change_op_cb_for_getsize(pkgmgr_client *pc)
 	mpc->info.request.cc = comm_client_new(PC_REQUEST);
 	retvm_if(mpc->info.request.cc == NULL, PKGMGR_R_ERROR, "client creation failed");
 
-	ret = comm_client_set_status_callback(COMM_STATUS_BROADCAST_GET_SIZE, mpc->info.request.cc, __operation_callback, pc);
+	ret = comm_client_set_status_callback(PKGMGR_CLIENT_STATUS_GET_SIZE, mpc->info.request.cc, __operation_callback, pc);
 	retvm_if(ret < 0, PKGMGR_R_ERROR, "set_status_callback() failed - %d", ret);
 
 	return PKGMGR_R_OK;
@@ -776,10 +775,7 @@ static int __change_op_cb_for_enable_disable(pkgmgr_client *pc, bool is_disable)
 	mpc->info.request.cc = comm_client_new(PC_REQUEST);
 	retvm_if(mpc->info.request.cc == NULL, PKGMGR_R_ERROR, "client creation failed");
 
-	if (is_disable)
-		ret = comm_client_set_status_callback(COMM_STATUS_BROADCAST_DISABLE_APP, mpc->info.request.cc, __operation_callback, pc);
-	else
-		ret = comm_client_set_status_callback(COMM_STATUS_BROADCAST_ENABLE_APP, mpc->info.request.cc, __operation_callback, pc);
+	ret = comm_client_set_status_callback(mpc->status_type, mpc->info.request.cc, __operation_callback, pc);
 	retvm_if(ret < 0, PKGMGR_R_ERROR, "set_status_callback() failed - %d", ret);
 
 	return PKGMGR_R_OK;
@@ -861,13 +857,13 @@ API pkgmgr_client *pkgmgr_client_new(client_type ctype)
 		pc->info.request.cc = comm_client_new(PC_REQUEST);
 		trym_if(pc->info.request.cc == NULL, "client creation failed");
 
-		ret = comm_client_set_status_callback(COMM_STATUS_BROADCAST_ALL, pc->info.request.cc, __operation_callback, pc);
+		ret = comm_client_set_status_callback(PKGMGR_CLIENT_STATUS_ALL, pc->info.request.cc, __operation_callback, pc);
 		trym_if(ret < 0L, "comm_client_set_status_callback() failed - %d", ret);
 	} else if (pc->ctype == PC_LISTENING) {
 		pc->info.listening.cc = comm_client_new(PC_LISTENING);
 		trym_if(pc->info.listening.cc == NULL, "client creation failed");
 
-		ret = comm_client_set_status_callback(COMM_STATUS_BROADCAST_ALL, pc->info.listening.cc, __status_callback, pc);
+		ret = comm_client_set_status_callback(PKGMGR_CLIENT_STATUS_ALL, pc->info.listening.cc, __status_callback, pc);
 		trym_if(ret < 0L, "comm_client_set_status_callback() failed - %d", ret);
 	}
 
@@ -997,15 +993,8 @@ static int __change_op_cb_for_enable_disable_splash_screen(pkgmgr_client *pc,
 		return PKGMGR_R_ENOMEM;
 	}
 
-	if (is_enable)
-		ret = comm_client_set_status_callback(
-				COMM_STATUS_BROADCAST_ENABLE_APP_SPLASH_SCREEN,
-				mpc->info.request.cc, __operation_callback, pc);
-	else
-		ret = comm_client_set_status_callback(
-				COMM_STATUS_BROADCAST_DISABLE_APP_SPLASH_SCREEN,
-				mpc->info.request.cc, __operation_callback, pc);
-
+	ret = comm_client_set_status_callback(mpc->status_type,
+			mpc->info.request.cc, __operation_callback, pc);
 	if (ret < 0) {
 		ERR("set_status_callback() failed - %d", ret);
 		return PKGMGR_R_ERROR;
@@ -1705,50 +1694,8 @@ API int pkgmgr_client_set_status_type(pkgmgr_client *pc, int status_type)
 	mpc->info.listening.cc = comm_client_new(PC_LISTENING);
 	retvm_if(mpc->info.listening.cc == NULL, PKGMGR_R_EINVAL, "client creation failed");
 
-	if ((mpc->status_type & PKGMGR_CLIENT_STATUS_INSTALL) == PKGMGR_CLIENT_STATUS_INSTALL) {
-		ret = comm_client_set_status_callback(COMM_STATUS_BROADCAST_INSTALL, mpc->info.listening.cc, __status_callback, pc);
-		retvm_if(ret < 0, PKGMGR_R_ECOMM, "PKGMGR_CLIENT_STATUS_INSTALL failed - %d", ret);
-	}
-
-	if ((mpc->status_type & PKGMGR_CLIENT_STATUS_UNINSTALL) == PKGMGR_CLIENT_STATUS_UNINSTALL) {
-		ret = comm_client_set_status_callback(COMM_STATUS_BROADCAST_UNINSTALL, mpc->info.listening.cc, __status_callback, pc);
-		retvm_if(ret < 0, PKGMGR_R_ECOMM, "COMM_STATUS_BROADCAST_UNINSTALL failed - %d", ret);
-	}
-
-	if ((mpc->status_type & PKGMGR_CLIENT_STATUS_MOVE) == PKGMGR_CLIENT_STATUS_MOVE) {
-		ret = comm_client_set_status_callback(COMM_STATUS_BROADCAST_MOVE, mpc->info.listening.cc, __status_callback, pc);
-		retvm_if(ret < 0, PKGMGR_R_ECOMM, "COMM_STATUS_BROADCAST_MOVE failed - %d", ret);
-	}
-
-	if ((mpc->status_type & PKGMGR_CLIENT_STATUS_INSTALL_PROGRESS) == PKGMGR_CLIENT_STATUS_INSTALL_PROGRESS) {
-		ret = comm_client_set_status_callback(COMM_STATUS_BROADCAST_INSTALL_PROGRESS, mpc->info.listening.cc, __status_callback, pc);
-		retvm_if(ret < 0, PKGMGR_R_ECOMM, "COMM_STATUS_BROADCAST_INSTALL_PROGRESS failed - %d", ret);
-	}
-
-	if ((mpc->status_type & PKGMGR_CLIENT_STATUS_UPGRADE) == PKGMGR_CLIENT_STATUS_UPGRADE) {
-		ret = comm_client_set_status_callback(COMM_STATUS_BROADCAST_UPGRADE, mpc->info.listening.cc, __status_callback, pc);
-		retvm_if(ret < 0, PKGMGR_R_ECOMM, "COMM_STATUS_BROADCAST_UPGRADE failed - %d", ret);
-	}
-
-	if ((mpc->status_type & PKGMGR_CLIENT_STATUS_ENABLE_APP) == PKGMGR_CLIENT_STATUS_ENABLE_APP) {
-		ret = comm_client_set_status_callback(COMM_STATUS_BROADCAST_ENABLE_APP, mpc->info.listening.cc, __status_callback, pc);
-		retvm_if(ret < 0, PKGMGR_R_ECOMM, "COMM_STATUS_BROADCAST_ENABLE_APP failed - %d", ret);
-	}
-
-	if ((mpc->status_type & PKGMGR_CLIENT_STATUS_DISABLE_APP) == PKGMGR_CLIENT_STATUS_DISABLE_APP) {
-		ret = comm_client_set_status_callback(COMM_STATUS_BROADCAST_DISABLE_APP, mpc->info.listening.cc, __status_callback, pc);
-		retvm_if(ret < 0, PKGMGR_R_ECOMM, "COMM_STATUS_BROADCAST_DISABLE_APP failed - %d", ret);
-	}
-
-	if ((mpc->status_type & PKGMGR_CLIENT_STATUS_ENABLE_APP_SPLASH_SCREEN) == PKGMGR_CLIENT_STATUS_ENABLE_APP_SPLASH_SCREEN) {
-		ret = comm_client_set_status_callback(COMM_STATUS_BROADCAST_ENABLE_APP_SPLASH_SCREEN, mpc->info.listening.cc, __status_callback, pc);
-		retvm_if(ret < 0, PKGMGR_R_ECOMM, "COMM_STATUS_BROADCAST_ENABLE_APP_SPLASH_SCREEN failed - %d", ret);
-	}
-
-	if ((mpc->status_type & PKGMGR_CLIENT_STATUS_DISABLE_APP_SPLASH_SCREEN) == PKGMGR_CLIENT_STATUS_DISABLE_APP_SPLASH_SCREEN) {
-		ret = comm_client_set_status_callback(COMM_STATUS_BROADCAST_DISABLE_APP_SPLASH_SCREEN, mpc->info.listening.cc, __status_callback, pc);
-		retvm_if(ret < 0, PKGMGR_R_ECOMM, "COMM_STATUS_BROADCAST_DISABLE_APP_SPLASH_SCREEN failed - %d", ret);
-	}
+	ret = comm_client_set_status_callback(status_type, mpc->info.listening.cc, __status_callback, pc);
+	retvm_if(ret < 0, PKGMGR_R_ECOMM, "comm_client_set_status_callback failed - %d", ret);
 
 	return PKGMGR_R_OK;
 }

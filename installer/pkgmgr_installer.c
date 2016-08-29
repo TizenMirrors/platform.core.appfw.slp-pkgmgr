@@ -38,8 +38,6 @@
 #include "pkgmgr_installer_debug.h"
 #include "pkgmgr_installer_info.h"
 
-#include "../client/include/comm_config.h"
-
 #include <pkgmgr-info.h>
 
 /* API export macro */
@@ -52,6 +50,33 @@
 
 #define CHK_PI_RET(r) \
 	do { if (NULL == pi) return (r); } while (0)
+
+#define OPTVAL_PRELOAD 1000
+#define OPTVAL_FORCE_REMOVAL 1001
+
+/* Supported options */
+const char *short_opts = "k:l:i:d:c:m:t:o:r:p:s:b:e:M:y:u:w:D:A:q";
+const struct option long_opts[] = {
+	{ "session-id", 1, NULL, 'k' },
+	{ "license-path", 1, NULL, 'l' },
+	{ "install", 1, NULL, 'i' },
+	{ "uninstall", 1, NULL, 'd' },
+	{ "clear", 1, NULL, 'c' },
+	{ "move", 1, NULL, 'm' },
+	{ "move-type", 1, NULL, 't' },
+	{ "optional-data", 0, NULL, 'o' },
+	{ "reinstall", 0, NULL, 'r' },
+	{ "caller-pkgid", 1, NULL, 'p' },
+	{ "tep-path", 1, NULL, 'e' },
+	{ "tep-move", 1, NULL, 'M' },
+	{ "smack", 1, NULL, 's' },
+	{ "direct-manifest-install", 1, NULL, 'y' },
+	{ "mount-install", 1, NULL, 'w' },
+	{ "recovery", 1, NULL, 'b' },
+	{ "preload", 0, NULL, OPTVAL_PRELOAD },
+	{ "force-remove", 0, NULL, OPTVAL_FORCE_REMOVAL },
+	{ 0, 0, 0, 0 }	/* sentinel */
+};
 
 struct pkgmgr_installer {
 	int request_type;
@@ -75,36 +100,36 @@ static uid_t g_target_uid;
 static const char *__get_signal_name(pkgmgr_installer *pi, const char *key)
 {
 	if (strcmp(key, PKGMGR_INSTALLER_INSTALL_PERCENT_KEY_STR) == 0)
-		return COMM_STATUS_BROADCAST_EVENT_INSTALL_PROGRESS;
+		return key;
 	else if (strcmp(key, PKGMGR_INSTALLER_GET_SIZE_KEY_STR) == 0)
-		return COMM_STATUS_BROADCAST_EVENT_GET_SIZE;
+		return key;
 	else if (strcmp(key, PKGMGR_INSTALLER_APPID_KEY_STR) == 0)
-		return COMM_STATUS_BROADCAST_EVENT_UNINSTALL;
+		return PKGMGR_INSTALLER_UNINSTALL_EVENT_STR;
 
 	switch (pi->request_type) {
 	case PKGMGR_REQ_INSTALL:
 	case PKGMGR_REQ_MANIFEST_DIRECT_INSTALL:
 	case PKGMGR_REQ_MOUNT_INSTALL:
-		return COMM_STATUS_BROADCAST_EVENT_INSTALL;
+		return PKGMGR_INSTALLER_INSTALL_EVENT_STR;
 	case PKGMGR_REQ_UNINSTALL:
-		return COMM_STATUS_BROADCAST_EVENT_UNINSTALL;
+		return PKGMGR_INSTALLER_UNINSTALL_EVENT_STR;
 	case PKGMGR_REQ_UPGRADE:
-		return COMM_STATUS_BROADCAST_EVENT_UPGRADE;
+		return PKGMGR_INSTALLER_UPGRADE_EVENT_STR;
 	case PKGMGR_REQ_MOVE:
-		return COMM_STATUS_BROADCAST_EVENT_MOVE;
+		return PKGMGR_INSTALLER_MOVE_EVENT_STR;
 	case PKGMGR_REQ_ENABLE_APP:
-		return COMM_STATUS_BROADCAST_EVENT_ENABLE_APP;
+		return PKGMGR_INSTALLER_APP_ENABLE_EVENT_STR;
 	case PKGMGR_REQ_DISABLE_APP:
-		return COMM_STATUS_BROADCAST_EVENT_DISABLE_APP;
+		return PKGMGR_INSTALLER_APP_DISABLE_EVENT_STR;
 	case PKGMGR_REQ_ENABLE_APP_SPLASH_SCREEN:
-		return COMM_STATUS_BROADCAST_EVENT_ENABLE_APP_SPLASH_SCREEN;
+		return PKGMGR_INSTALLER_APP_ENABLE_SPLASH_SCREEN_EVENT_STR;
 	case PKGMGR_REQ_DISABLE_APP_SPLASH_SCREEN:
-		return COMM_STATUS_BROADCAST_EVENT_DISABLE_APP_SPLASH_SCREEN;
+		return PKGMGR_INSTALLER_APP_DISABLE_SPLASH_SCREEN_EVENT_STR;
 	}
 
-	ERR("cannot find type, send signal with type SIGNAL_STATUS");
+	ERR("cannot find type");
 
-	return COMM_STATUS_BROADCAST_SIGNAL_STATUS;
+	return NULL;
 }
 
 static int __send_signal_for_app_event(pkgmgr_installer *pi, const char *pkg_type,
@@ -128,8 +153,8 @@ static int __send_signal_for_app_event(pkgmgr_installer *pi, const char *pkg_typ
 	}
 
 	if (g_dbus_connection_emit_signal(pi->conn, NULL,
-				COMM_STATUS_BROADCAST_OBJECT_PATH,
-				COMM_STATUS_BROADCAST_INTERFACE, name,
+				PKGMGR_INSTALLER_DBUS_OBJECT_PATH,
+				PKGMGR_INSTALLER_DBUS_INTERFACE, name,
 				g_variant_new("(ussssss)", pi->target_uid, sid,
 					pkg_type, pkgid, appid, key, val), &err)
 			!= TRUE) {
@@ -162,8 +187,8 @@ static int __send_signal_for_event(pkgmgr_installer *pi, const char *pkg_type,
 	}
 
 	if (g_dbus_connection_emit_signal(pi->conn, NULL,
-				COMM_STATUS_BROADCAST_OBJECT_PATH,
-				COMM_STATUS_BROADCAST_INTERFACE, name,
+				PKGMGR_INSTALLER_DBUS_OBJECT_PATH,
+				PKGMGR_INSTALLER_DBUS_INTERFACE, name,
 				g_variant_new("(ussssss)", pi->target_uid, sid,
 					pkg_type, pkgid, "", key, val), &err)
 			!= TRUE) {

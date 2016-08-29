@@ -32,7 +32,7 @@
 
 #include <dlog.h>
 
-#include "../client/include/comm_config.h"
+#include "pkgmgr_installer_config.h"
 
 #ifdef LOG_TAG
 #undef LOG_TAG
@@ -127,8 +127,8 @@ static void __emit_signal(const char *name, GVariant *gv)
 	GError *err = NULL;
 
 	if (g_dbus_connection_emit_signal(conn, NULL,
-				COMM_STATUS_BROADCAST_OBJECT_PATH,
-				COMM_STATUS_BROADCAST_INTERFACE,
+				PKGMGR_INSTALLER_DBUS_OBJECT_PATH,
+				PKGMGR_INSTALLER_DBUS_INTERFACE,
 				name, gv, &err) != TRUE) {
 		LOGE("g_dbus_connection_emit_signal failed: %s", err->message);
 		g_error_free(err);
