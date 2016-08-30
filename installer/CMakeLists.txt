@@ -25,7 +25,7 @@ message(STATUS "version/major : ${VERSION} / ${VERSION_MAJOR}")
 ### Get required CFLAGS, LDFLAGS from pkg-config
 
 include(FindPkgConfig)
-pkg_check_modules(installer_pkgs REQUIRED glib-2.0 gio-2.0 dlog pkgmgr-info)
+pkg_check_modules(installer_pkgs REQUIRED glib-2.0 gio-2.0 dlog pkgmgr-info libtzplatform-config)
 foreach(flag ${installer_pkgs_CFLAGS})
 	set(installer_pkgs_CFLAGS_str "${installer_pkgs_CFLAGS_str} ${flag}")
 endforeach()

@@ -32,6 +32,7 @@
 
 #include <glib.h>
 #include <gio/gio.h>
+#include <tzplatform_config.h>
 
 #include "pkgmgr_installer.h"
 #include "pkgmgr_installer_config.h"
@@ -629,6 +630,11 @@ pkgmgr_installer_receive_request(pkgmgr_installer *pi,
 		}
 	}
 
+	/* if target user is not set, set as tizenglobalapp user */
+	if (pi->target_uid == 0) {
+		pi->target_uid = tzplatform_getuid(TZ_SYS_GLOBALAPP_USER);
+		g_target_uid = pi->target_uid;
+	}
  RET:
 	return r;
 }
