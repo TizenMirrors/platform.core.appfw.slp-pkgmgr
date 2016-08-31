@@ -199,11 +199,11 @@ static gboolean __handle_signal(gint fd, GIOCondition cond, gpointer user_data)
 	data = malloc(data_len);
 	memcpy(data, buf + type_len, data_len);
 
+	/* floating type GVariant instance */
 	gv = g_variant_new_from_data(G_VARIANT_TYPE("(ussssss)"), data,
 			data_len, TRUE, NULL, NULL);
 	__emit_signal(type_name, gv);
 
-	g_variant_unref(gv);
 	free(data);
 	free(type_name);
 	close(clifd);
