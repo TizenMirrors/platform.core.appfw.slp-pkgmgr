@@ -296,7 +296,7 @@ typedef enum {
 	PC_REQUEST = 0,
 	PC_LISTENING,
 	PC_BROADCAST,
-} client_type;
+} pkgmgr_client_type;
 
 typedef enum {
 	PM_DEFAULT,
@@ -354,7 +354,7 @@ typedef enum {
  * @return	pkgmgr_client object
  * @retval	NULL	on failure creating an object
 */
-pkgmgr_client *pkgmgr_client_new(client_type ctype);
+pkgmgr_client *pkgmgr_client_new(pkgmgr_client_type ctype);
 
 /**
  * @brief	This API deletes pkgmgr client.

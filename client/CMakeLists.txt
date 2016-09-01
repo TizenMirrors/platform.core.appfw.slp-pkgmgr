@@ -1,6 +1,9 @@
 # package manager client library
 
-SET(SRCS src/pkgmgr-internal.c src/pkgmgr.c src/comm_client_gdbus.c)
+SET(SRCS
+	src/pkgmgr.c
+	src/pkgmgr_client_connection.c
+	src/pkgmgr_client_internal.c)
 
 pkg_check_modules(CLIENT_DEPS REQUIRED
 		glib-2.0

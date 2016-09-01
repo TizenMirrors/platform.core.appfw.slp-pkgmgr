@@ -1,6 +1,4 @@
 /*
- * pkgmgr-debug
- *
  * Copyright (c) 2000 - 2011 Samsung Electronics Co., Ltd. All rights reserved.
  *
   * Contact: junsuk. oh <junsuk77.oh@samsung.com>
@@ -19,8 +17,8 @@
  *
  */
 
-#ifndef __PKGMGR_DEBUG_H__
-#define __PKGMGR_DEBUG_H__
+#ifndef __PKGMGR_CLIENT_DEBUG_H__
+#define __PKGMGR_CLIENT_DEBUG_H__
 
 #include <dlog.h>
 
@@ -90,4 +88,4 @@
 		} \
 	} while (0)
 
-#endif  /* __PKGMGR_DEBUG_H__ */
+#endif  /* __PKGMGR_CLIENT_DEBUG_H__ */

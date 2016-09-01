@@ -30,16 +30,15 @@
 #include <stdbool.h>
 #include <xdgmime.h>
 
-#include "pkgmgr-internal.h"
-#include "pkgmgr-debug.h"
-
 #include <unistd.h>
 #include <dlfcn.h>
 #include <sys/time.h>
 #include <tzplatform_config.h>
+#include <pkgmgr-info.h>
 
 #include "package-manager.h"
-#include <pkgmgr-info.h>
+#include "pkgmgr_client_debug.h"
+#include "pkgmgr_client_internal.h"
 
 #define GLOBAL_USER tzplatform_getuid(TZ_SYS_GLOBALAPP_USER)
 

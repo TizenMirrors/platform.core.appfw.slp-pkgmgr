@@ -20,17 +20,50 @@
  *
  */
 
-
-
-
-
-#ifndef __PKG_MANAGER_INTERNAL_H__
-#define __PKG_MANAGER_INTERNAL_H__
+#ifndef __PKGMGR_CLIENT_INTERNAL_H__
+#define __PKGMGR_CLIENT_INTERNAL_H__
 
 #include <unistd.h>
 #include <ctype.h>
 
+#include <glib.h>
+#include <gio/gio.h>
+
 #include "package-manager-plugin.h"
+#include "package-manager.h"
+
+#define BUFMAX 4096
+
+struct cb_info {
+	int req_id;
+	char *req_key;
+	int status_type;
+	pkgmgr_handler event_cb;
+	pkgmgr_app_handler app_event_cb;
+	pkgmgr_pkg_size_info_receive_cb size_info_cb;
+	void *data;
+	struct pkgmgr_client_t *client;
+	guint sid;
+};
+
+struct pkgmgr_client_t {
+	pkgmgr_client_type pc_type;
+	int status_type;
+	GDBusConnection *conn;
+	GList *cb_info_list;
+	char *tep_path;
+	bool tep_move;
+};
+
+int pkgmgr_client_connection_connect(struct pkgmgr_client_t *pc);
+void pkgmgr_client_connection_disconnect(struct pkgmgr_client_t *pc);
+int pkgmgr_client_connection_set_callback(struct pkgmgr_client_t *pc,
+		struct cb_info *cb_info);
+void pkgmgr_client_connection_unset_callback(struct pkgmgr_client_t *pc,
+		struct cb_info *cb_info);
+int pkgmgr_client_connection_send_request(struct pkgmgr_client_t *pc,
+		const char *method, GVariant *params, GVariant **result);
+
 
 typedef package_manager_pkg_info_t package_manager_app_info_t;
 
@@ -77,4 +110,4 @@ char *_get_backend_path_with_type(const char *type);
 int _get_mime_from_file(const char *filename, char *mimetype, int len);
 int _get_mime_extension(const char *mimetype, char *ext, int len);
 
-#endif				/* __PKG_MANAGER_INTERNAL_H__ */
+#endif				/* __PKGMGR_CLIENT_INTERNAL_H__ */
