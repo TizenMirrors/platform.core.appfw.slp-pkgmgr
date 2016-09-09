@@ -52,6 +52,7 @@ configure_file(pkgmgr-installer.pc.in ${CMAKE_CURRENT_BINARY_DIR}/pkgmgr-install
 INSTALL(TARGETS pkgmgr_installer DESTINATION ${LIB_INSTALL_DIR} COMPONENT RuntimeLibraries)
 INSTALL(FILES pkgmgr_installer.h DESTINATION include/pkgmgr)
 INSTALL(FILES pkgmgr_installer_info.h DESTINATION include/pkgmgr)
+INSTALL(FILES pkgmgr_installer_error.h DESTINATION include/pkgmgr)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/pkgmgr-installer.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
 
 ## pkgmgr_installer_signal_agent
