@@ -15,6 +15,8 @@
  *
  */
 
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -24,6 +26,7 @@
 #include <sys/types.h>
 #include <sys/un.h>
 #include <linux/limits.h>
+#include <pwd.h>
 
 #include <glib.h>
 #include <glib-unix.h>
@@ -40,6 +43,8 @@
 #define LOG_TAG "PKGMGR_INSTALLER_SIGNAL_AGENT"
 
 #define BUFMAX 4096
+#define PWBUFSIZE sysconf(_SC_GETPW_R_SIZE_MAX)
+#define APPFW_USERNAME "app_fw"
 
 static int server_fd;
 static GMainLoop *loop;
@@ -141,6 +146,41 @@ static gboolean __quit(gpointer user_data)
 	return FALSE;
 }
 
+static int __check_authority(int fd)
+{
+	int r;
+	struct ucred cr;
+	socklen_t len;
+	struct passwd pwd;
+	struct passwd *pwd_r;
+	char buf[PWBUFSIZE];
+
+	len = sizeof(struct ucred);
+	r = getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &cr, &len);
+	if (r != 0) {
+		LOGE("getsockopt failed: %d", errno);
+		return -1;
+	}
+
+	/* allow root user */
+	if (cr.uid == 0)
+		return 0;
+
+	r = getpwuid_r(cr.uid, &pwd, buf, sizeof(buf), &pwd_r);
+	if (r != 0 || pwd_r == NULL) {
+		LOGE("getpwuid failed: %d", r);
+		return -1;
+	}
+
+	/* only app_fw user can send signal to agent */
+	if (strcmp(pwd_r->pw_name, APPFW_USERNAME) != 0) {
+		LOGE("unauthorized client");
+		return -1;
+	}
+
+	return 0;
+}
+
 /**
  * packet format:
  * +----------------+-------------+-----------+-------------------+
@@ -164,6 +204,11 @@ static gboolean __handle_signal(gint fd, GIOCondition cond, gpointer user_data)
 	if (clifd == -1) {
 		LOGE("accept failed: %d", errno);
 		return FALSE;
+	}
+
+	if (__check_authority(clifd)) {
+		close(clifd);
+		return TRUE;
 	}
 
 	r = recv(clifd, buf, sizeof(size_t) + sizeof(gsize), 0);
