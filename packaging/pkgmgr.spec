@@ -72,6 +72,7 @@ Library for installer frontend/backend for packaging.
 %package installer-devel
 Summary:    Dev package for libpkgmgr-installer
 Requires:   %{name} = %{version}-%{release}
+Requires:   pkgmgr-installer = %{version}-%{release}
 
 %description installer-devel
 Dev package for libpkgmgr-installer for packaging.
