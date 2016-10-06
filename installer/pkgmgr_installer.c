@@ -637,6 +637,16 @@ API int pkgmgr_installer_send_app_uninstall_signal(pkgmgr_installer *pi,
 	return ret;
 }
 
+API int pkgmgr_installer_send_app_uninstall_signal_for_uid(
+		pkgmgr_installer *pi, uid_t uid, const char *pkg_type,
+		const char *pkgid, const char *val)
+{
+	int ret = 0;
+	ret = __send_signal_for_event_for_uid(pi, uid, pkg_type, pkgid, NULL,
+			PKGMGR_INSTALLER_APPID_KEY_STR, val);
+	return ret;
+}
+
 API int pkgmgr_installer_set_uid(pkgmgr_installer *pi, uid_t uid)
 {
 	if (pi == NULL)

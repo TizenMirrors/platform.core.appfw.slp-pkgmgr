@@ -835,6 +835,25 @@ int pkgmgr_installer_send_app_uninstall_signal(pkgmgr_installer *pi,
 			     const char *val);
 
 /**
+	@brief		Send a signal which indicates application is being uninstalled
+	@pre		None
+	@post		None
+	@see		None
+	@param[in]	pi	pkgmgr_installer object
+	@param[in]	uid	user id
+	@param[in]	pkg_type	package type: "deb", "jar", "wgt", ...
+	@param[in]	pkgid	package id
+	@param[in]	key			Signal key
+	@param[in]	val			Signal value
+	@return		Operation result
+	@retval		0 on success
+	@retval		-errno on failure
+ */
+int pkgmgr_installer_send_app_uninstall_signal_for_uid(
+		pkgmgr_installer *pi, uid_t uid, const char *pkg_type,
+		const char *pkgid, const char *val);
+
+/**
  * @brief	This API sets the uid of given pkgmgr_installer.
  *
  *              This API is for package-manager client application.\n
