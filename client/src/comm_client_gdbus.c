@@ -64,6 +64,8 @@ static int __get_signal_type(const char *name)
 		return PKGMGR_CLIENT_STATUS_INSTALL;
 	else if (strcmp(name, PKGMGR_INSTALLER_UNINSTALL_EVENT_STR) == 0)
 		return PKGMGR_CLIENT_STATUS_UNINSTALL;
+	else if (strcmp(name, PKGMGR_INSTALLER_CLEAR_EVENT_STR) == 0)
+		return PKGMGR_CLIENT_STATUS_CLEAR_DATA;
 	else if (strcmp(name, PKGMGR_INSTALLER_MOVE_EVENT_STR) == 0)
 		return PKGMGR_CLIENT_STATUS_MOVE;
 	else if (strcmp(name, PKGMGR_INSTALLER_INSTALL_PERCENT_KEY_STR) == 0)

@@ -128,6 +128,8 @@ static const char *__get_signal_name(pkgmgr_installer *pi, const char *key)
 		return PKGMGR_INSTALLER_APP_ENABLE_SPLASH_SCREEN_EVENT_STR;
 	case PKGMGR_REQ_DISABLE_APP_SPLASH_SCREEN:
 		return PKGMGR_INSTALLER_APP_DISABLE_SPLASH_SCREEN_EVENT_STR;
+	case PKGMGR_REQ_CLEAR:
+		return PKGMGR_INSTALLER_CLEAR_EVENT_STR;
 	}
 
 	ERR("cannot find type");
