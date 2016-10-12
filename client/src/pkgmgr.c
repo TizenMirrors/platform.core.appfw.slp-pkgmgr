@@ -426,7 +426,7 @@ static char *__get_type_from_path(const char *pkg_path)
 	return strdup(pkg_type);
 }
 
-API int pkgmgr_client_set_tep_path(pkgmgr_client *pc, char *tep_path,
+API int pkgmgr_client_set_tep_path(pkgmgr_client *pc, const char *tep_path,
 		bool tep_move)
 {
 	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *) pc;

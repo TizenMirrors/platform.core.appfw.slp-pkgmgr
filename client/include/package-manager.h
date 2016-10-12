@@ -381,7 +381,7 @@ int pkgmgr_client_free(pkgmgr_client *pc);
  * @retval	PKGMGR_R_OK	success
  * @retval	PKGMGR_R_EINVAL	invalid argument
 */
-int pkgmgr_client_set_tep_path(pkgmgr_client *pc, char *tep_path, bool tep_move);
+int pkgmgr_client_set_tep_path(pkgmgr_client *pc, const char *tep_path, bool tep_move);
 
 /**
  * @brief	This API installs package.
