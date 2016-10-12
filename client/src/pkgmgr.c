@@ -295,15 +295,13 @@ static int __check_app_process(pkgmgr_request_service_type service_type,
 		return ret;
 	}
 
-	g_variant_get(result, "(i)", &ret);
+	g_variant_get(result, "(ii)", &ret, &pid);
 	g_variant_unref(result);
 	if (ret != PKGMGR_R_OK) {
 		ERR("request failed, ret=%d", ret);
 		return ret;
 	}
 
-	/* FIXME */
-	pid  = __sync_process(pkgid);
 	*(int *)data = pid;
 
 	pkgmgrinfo_pkginfo_destroy_pkginfo(handle);
