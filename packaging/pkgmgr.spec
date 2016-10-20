@@ -161,7 +161,7 @@ HOME="$saveHOME"
 %files client-devel
 %manifest %{name}-client-devel.manifest
 %defattr(-,root,root,-)
-%{_includedir}/package-manager.h
+%{_includedir}/*.h
 %{_libdir}/pkgconfig/pkgmgr.pc
 %{_libdir}/libpkgmgr-client.so
 
@@ -185,6 +185,5 @@ HOME="$saveHOME"
 %files types-devel
 %manifest %{name}-types-devel.manifest
 %defattr(-,root,root,-)
-%{_includedir}/package-manager-types.h
-%{_includedir}/package-manager-plugin.h
+%{_includedir}/package-manager-*.h
 %{_libdir}/pkgconfig/pkgmgr-types.pc

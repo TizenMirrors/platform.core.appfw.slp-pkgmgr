@@ -1,9 +1,6 @@
 # package manager client library
 
-SET(SRCS
-	src/pkgmgr.c
-	src/pkgmgr_client_connection.c
-	src/pkgmgr_client_internal.c)
+AUX_SOURCE_DIRECTORY(src SRCS)
 
 pkg_check_modules(CLIENT_DEPS REQUIRED
 		glib-2.0
@@ -33,6 +30,6 @@ CONFIGURE_FILE(pkgmgr.pc.in pkgmgr.pc @ONLY)
 CONFIGURE_FILE(pkg_path.conf.in pkg_path.conf @ONLY)
 
 INSTALL(TARGETS ${PKGMGR_CLIENT} DESTINATION ${LIB_INSTALL_DIR} COMPONENT RuntimeLibraries)
-INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/package-manager.h DESTINATION include)
+INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ DESTINATION include)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/pkgmgr.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/pkg_path.conf DESTINATION ${SYSCONFDIR}/package-manager/)
