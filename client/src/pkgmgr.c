@@ -1260,6 +1260,7 @@ API int pkgmgr_client_remove_listen_status(pkgmgr_client *pc)
 		pkgmgr_client_connection_unset_callback(pc, cb_info);
 		client->cb_info_list = g_list_delete_link(client->cb_info_list,
 				tmp);
+		__free_cb_info(cb_info);
 		tmp = next;
 	}
 
