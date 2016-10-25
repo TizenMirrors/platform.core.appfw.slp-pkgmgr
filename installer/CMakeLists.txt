@@ -42,7 +42,7 @@ ENDFOREACH()
 add_library(pkgmgr_installer SHARED pkgmgr_installer.c)
 set_target_properties(pkgmgr_installer PROPERTIES SOVERSION ${VERSION_MAJOR})
 set_target_properties(pkgmgr_installer PROPERTIES VERSION ${VERSION})
-set_target_properties(pkgmgr_installer PROPERTIES COMPILE_FLAGS "${installer_pkgs_CFLAGS_str}")
+set_target_properties(pkgmgr_installer PROPERTIES COMPILE_FLAGS "${installer_pkgs_CFLAGS_str} -fPIC")
 target_link_libraries(pkgmgr_installer ${installer_pkgs_LDFLAGS})
 
 ### Create pc file
@@ -56,7 +56,7 @@ INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/pkgmgr-installer.pc DESTINATION ${LIB_
 
 ## pkgmgr_installer_signal_agent
 ADD_EXECUTABLE(pkgmgr-installer-signal-agent pkgmgr_installer_signal_agent.c)
-SET_TARGET_PROPERTIES(pkgmgr-installer-signal-agent PROPERTIES COMPILE_FLAGS "${AGENT_CFLAGS}")
-TARGET_LINK_LIBRARIES(pkgmgr-installer-signal-agent ${AGENT_DEPS_LDFLAGS})
+SET_TARGET_PROPERTIES(pkgmgr-installer-signal-agent PROPERTIES COMPILE_FLAGS "${AGENT_CFLAGS} -fPIE")
+TARGET_LINK_LIBRARIES(pkgmgr-installer-signal-agent ${AGENT_DEPS_LDFLAGS} "-pie")
 
 INSTALL(TARGETS pkgmgr-installer-signal-agent DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
