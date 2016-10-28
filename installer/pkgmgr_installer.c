@@ -261,14 +261,14 @@ static int __send_signal_for_event_for_uid(pkgmgr_installer *pi, uid_t uid,
 	memcpy(ptr, name, name_size);
 	ptr += name_size;
 	memcpy(ptr, gv_data, gv_len);
+	g_free(gv_data);
 
 	if (__send_signal_to_agent(uid, data, data_len)) {
 		ERR("failed to send signal to agent");
-		g_free(data);
+		free(data);
 		return -1;
 	}
 
-	g_free(gv_data);
 	free(data);
 
 	return 0;
