@@ -224,17 +224,7 @@ static void __signal_handler(GDBusConnection *conn, const gchar *sender_name,
 	else if (cb_info->size_info_cb)
 		__handle_size_info_callback(cb_info, pkgid, val);
 
-	/* for request, unsubscribe if end signal received */
-	if (cb_info->req_key &&
-			(strcmp(key, "end") == 0 || strcmp(val, "end") == 0)) {
-		g_dbus_connection_signal_unsubscribe(cb_info->client->conn,
-				cb_info->sid);
-		cb_info->client->cb_info_list = g_list_remove(
-				cb_info->client->cb_info_list,
-				cb_info);
-		free(cb_info->req_key);
-		free(cb_info);
-	}
+	/* TODO: unsubscribe request callback */
 }
 
 int pkgmgr_client_connection_set_callback(struct pkgmgr_client_t *pc,
