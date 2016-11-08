@@ -535,15 +535,19 @@ int pkgmgr_client_usr_activate(pkgmgr_client *pc, const char *pkg_type,
  * @param[in]	pkg_type		package type
  * @param[in]	pkgids	array of package ids
  * @param[in]	n_pkgs	size of array
+ * @param[in]	event_cb	user callback
+ * @param[in]	data	user data
  * @return	request_id (>0) if success, error code(<0) if fail\n
  * @retval	PKGMGR_R_OK	success
  * @retval	PKGMGR_R_EINVAL	invalid argument
  * @retval	PKGMGR_R_ECOMM	communication error
 */
 int pkgmgr_client_activate_packages(pkgmgr_client *pc, const char *pkg_type,
-				const char **pkgids, int n_pkgs);
+				const char **pkgids, int n_pkgs,
+				pkgmgr_handler event_cb, void *data);
 int pkgmgr_client_usr_activate_packages(pkgmgr_client *pc, const char *pkg_type,
-				const char **pkgids, int n_pkgs, uid_t uid);
+				const char **pkgids, int n_pkgs,
+				pkgmgr_handler event_cb, void *data, uid_t uid);
 
 /**
  * @brief	This API deactivates package.
@@ -572,15 +576,19 @@ int pkgmgr_client_usr_deactivate(pkgmgr_client *pc, const char *pkg_type,
  * @param[in]	pkg_type		package type
  * @param[in]	pkgids	array of package ids
  * @param[in]	n_pkgs	size of array
+ * @param[in]	event_cb	user callback
+ * @param[in]	data	user data
  * @return	request_id (>0) if success, error code(<0) if fail\n
  * @retval	PKGMGR_R_OK	success
  * @retval	PKGMGR_R_EINVAL	invalid argument
  * @retval	PKGMGR_R_ECOMM	communication error
 */
 int pkgmgr_client_deactivate_packages(pkgmgr_client *pc, const char *pkg_type,
-				 const char **pkgids, int n_pkgs);
+				 const char **pkgids, int n_pkgs,
+				 pkgmgr_handler event_cb, void *data);
 int pkgmgr_client_usr_deactivate_packages(pkgmgr_client *pc, const char *pkg_type,
-				 const char **pkgids, int n_pkgs, uid_t uid);
+				 const char **pkgids, int n_pkgs,
+				 pkgmgr_handler event_cb, void *data, uid_t uid);
 
 /**
  * @brief	This API deactivates app.

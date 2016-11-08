@@ -881,7 +881,7 @@ API int pkgmgr_client_usr_activate(pkgmgr_client *pc, const char *pkg_type,
 		return ret;
 	}
 
-	g_variant_get(result, "(i)", &ret);
+	g_variant_get(result, "(is)", &ret, NULL);
 	g_variant_unref(result);
 
 	return ret;
@@ -895,16 +895,23 @@ API int pkgmgr_client_activate(pkgmgr_client *pc, const char *pkg_type,
 
 API int pkgmgr_client_usr_activate_packages(pkgmgr_client *pc,
 		const char *pkg_type, const char **pkgids, int n_pkgs,
-		uid_t uid)
+		pkgmgr_handler event_cb, void *data, uid_t uid)
 {
 	GVariant *result;
 	GVariantBuilder *builder;
 	int ret = PKGMGR_R_ECOMM;
+	char *req_key = NULL;
 	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
+	struct cb_info *cb_info;
 	int i;
 
 	if (pc == NULL || pkgids == NULL || pkg_type == NULL || n_pkgs < 1) {
 		ERR("invalid parameter");
+		return PKGMGR_R_EINVAL;
+	}
+
+	if (client->pc_type != PC_REQUEST) {
+		ERR("client type is not PC_REQUEST");
 		return PKGMGR_R_EINVAL;
 	}
 
@@ -921,17 +928,38 @@ API int pkgmgr_client_usr_activate_packages(pkgmgr_client *pc,
 		return ret;
 	}
 
-	g_variant_get(result, "(i)", &ret);
-	g_variant_unref(result);
+	g_variant_get(result, "(i&s)", &ret, &req_key);
+	if (req_key == NULL) {
+		g_variant_unref(result);
+		return PKGMGR_R_ECOMM;
+	}
+	if (ret != PKGMGR_R_OK) {
+		g_variant_unref(result);
+		return ret;
+	}
 
-	return ret;
+	cb_info = __create_event_cb_info(client, event_cb, data, req_key);
+	if (cb_info == NULL) {
+		g_variant_unref(result);
+		return PKGMGR_R_ERROR;
+	}
+	g_variant_unref(result);
+	ret = pkgmgr_client_connection_set_callback(client, cb_info);
+	if (ret != PKGMGR_R_OK) {
+		__free_cb_info(cb_info);
+		return ret;
+	}
+	client->cb_info_list = g_list_append(client->cb_info_list, cb_info);
+
+	return cb_info->req_id;
 }
 
 API int pkgmgr_client_activate_packages(pkgmgr_client *pc,
-		const char *pkg_type, const char **pkgids, int n_pkgs)
+		const char *pkg_type, const char **pkgids, int n_pkgs,
+		pkgmgr_handler event_cb, void *data)
 {
 	return pkgmgr_client_usr_activate_packages(pc, pkg_type,
-			pkgids, n_pkgs, _getuid());
+			pkgids, n_pkgs, event_cb, data, _getuid());
 }
 
 API int pkgmgr_client_usr_deactivate(pkgmgr_client *pc, const char *pkg_type,
@@ -959,7 +987,7 @@ API int pkgmgr_client_usr_deactivate(pkgmgr_client *pc, const char *pkg_type,
 		return ret;
 	}
 
-	g_variant_get(result, "(i)", &ret);
+	g_variant_get(result, "(is)", &ret, NULL);
 	g_variant_unref(result);
 
 	return ret;
@@ -973,16 +1001,23 @@ API int pkgmgr_client_deactivate(pkgmgr_client *pc, const char *pkg_type,
 
 API int pkgmgr_client_usr_deactivate_packages(pkgmgr_client *pc,
 		const char *pkg_type, const char **pkgids, int n_pkgs,
-		uid_t uid)
+		pkgmgr_handler event_cb, void *data, uid_t uid)
 {
 	GVariant *result;
 	GVariantBuilder *builder;
 	int ret = PKGMGR_R_ECOMM;
+	char *req_key = NULL;
 	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
+	struct cb_info *cb_info;
 	int i;
 
 	if (pc == NULL || pkgids == NULL || pkg_type == NULL || n_pkgs < 1) {
 		ERR("invalid parameter");
+		return PKGMGR_R_EINVAL;
+	}
+
+	if (client->pc_type != PC_REQUEST) {
+		ERR("client type is not PC_REQUEST");
 		return PKGMGR_R_EINVAL;
 	}
 
@@ -991,24 +1026,45 @@ API int pkgmgr_client_usr_deactivate_packages(pkgmgr_client *pc,
 		g_variant_builder_add(builder, "s", pkgids[i]);
 
 	ret = pkgmgr_client_connection_send_request(client, "disable_pkgs",
-		g_variant_new("(us@as)", uid, pkg_type, builder), &result);
+		g_variant_new("(usas)", uid, pkg_type, builder), &result);
 	g_variant_builder_unref(builder);
 	if (ret != PKGMGR_R_OK) {
 		ERR("request failed: %d", ret);
 		return ret;
 	}
 
-	g_variant_get(result, "(i)", &ret);
-	g_variant_unref(result);
+	g_variant_get(result, "(i&s)", &ret, &req_key);
+	if (req_key == NULL) {
+		g_variant_unref(result);
+		return PKGMGR_R_ECOMM;
+	}
+	if (ret != PKGMGR_R_OK) {
+		g_variant_unref(result);
+		return ret;
+	}
 
-	return ret;
+	cb_info = __create_event_cb_info(client, event_cb, data, req_key);
+	if (cb_info == NULL) {
+		g_variant_unref(result);
+		return PKGMGR_R_ERROR;
+	}
+	g_variant_unref(result);
+	ret = pkgmgr_client_connection_set_callback(client, cb_info);
+	if (ret != PKGMGR_R_OK) {
+		__free_cb_info(cb_info);
+		return ret;
+	}
+	client->cb_info_list = g_list_append(client->cb_info_list, cb_info);
+
+	return cb_info->req_id;
 }
 
 API int pkgmgr_client_deactivate_packages(pkgmgr_client *pc,
-		const char *pkg_type, const char **pkgids, int n_pkgs)
+		const char *pkg_type, const char **pkgids, int n_pkgs,
+		pkgmgr_handler event_cb, void *data)
 {
 	return pkgmgr_client_usr_deactivate_packages(pc, pkg_type,
-			pkgids, n_pkgs, _getuid());
+			pkgids, n_pkgs, event_cb, data, _getuid());
 }
 
 API int pkgmgr_client_usr_activate_app(pkgmgr_client *pc, const char *appid,
