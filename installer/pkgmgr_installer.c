@@ -119,6 +119,7 @@ static const char *__get_signal_name(pkgmgr_installer *pi, const char *key)
 	case PKGMGR_REQ_MOUNT_INSTALL:
 	case PKGMGR_REQ_REINSTALL:
 	case PKGMGR_REQ_ENABLE_PKG:
+	case PKGMGR_REQ_RECOVER:
 		return PKGMGR_INSTALLER_INSTALL_EVENT_STR;
 	case PKGMGR_REQ_UNINSTALL:
 	case PKGMGR_REQ_DISABLE_PKG:
