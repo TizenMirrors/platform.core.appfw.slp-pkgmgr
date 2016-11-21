@@ -54,6 +54,8 @@
 
 #define OPTVAL_PRELOAD 1000
 #define OPTVAL_FORCE_REMOVAL 1001
+#define OPTVAL_PRELOAD_RW 1002
+#define OPTVAL_NO_REMOVAL 1003
 
 /* Supported options */
 const char *short_opts = "k:l:i:d:c:m:t:o:r:p:s:b:e:M:y:u:w:D:A:q";
@@ -76,6 +78,8 @@ const struct option long_opts[] = {
 	{ "recovery", 1, NULL, 'b' },
 	{ "preload", 0, NULL, OPTVAL_PRELOAD },
 	{ "force-remove", 0, NULL, OPTVAL_FORCE_REMOVAL },
+	{ "preload-rw", 0, NULL, OPTVAL_PRELOAD_RW },
+	{ "no-remove", 0, NULL, OPTVAL_NO_REMOVAL },
 	{ 0, 0, 0, 0 }	/* sentinel */
 };
 
@@ -93,6 +97,8 @@ struct pkgmgr_installer {
 	int is_tep_included;
 	int is_preload;
 	int force_removal;
+	int is_preload_rw;
+	int no_removal;
 	GDBusConnection *conn;
 };
 
@@ -369,6 +375,14 @@ pkgmgr_installer_receive_request(pkgmgr_installer *pi,
 			pi->force_removal = 1;
 			DBG("force-remove request [%d]", pi->force_removal);
 			break;
+		case OPTVAL_PRELOAD_RW:	/* request for preload-rw app */
+			pi->is_preload_rw = 1;
+			DBG("preload-rw request [%d]", pi->is_preload_rw);
+			break;
+		case OPTVAL_NO_REMOVAL:	/* request for no-remove */
+			pi->no_removal = 1;
+			DBG("no-remove request [%d]", pi->no_removal);
+			break;
 		case 'k':	/* session id */
 			if (pi->session_id)
 				free(pi->session_id);
@@ -627,6 +641,18 @@ API int pkgmgr_installer_get_force_removal(pkgmgr_installer *pi)
 {
 	CHK_PI_RET(PKGMGR_REQ_INVALID);
 	return pi->force_removal;
+}
+
+API int pkgmgr_installer_get_is_preload_rw(pkgmgr_installer *pi)
+{
+	CHK_PI_RET(PKGMGR_REQ_INVALID);
+	return pi->is_preload_rw;
+}
+
+API int pkgmgr_installer_get_no_removal(pkgmgr_installer *pi)
+{
+	CHK_PI_RET(PKGMGR_REQ_INVALID);
+	return pi->no_removal;
 }
 
 API int pkgmgr_installer_send_app_uninstall_signal(pkgmgr_installer *pi,

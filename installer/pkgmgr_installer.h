@@ -624,6 +624,7 @@ int main(int argc, char **argv)
 	@endcode
  */
 int pkgmgr_installer_get_is_preload(pkgmgr_installer *pi);
+int pkgmgr_installer_get_is_preload_rw(pkgmgr_installer *pi);
 
 /**
 	@brief		Get if the request is for force-removal
@@ -659,6 +660,7 @@ int main(int argc, char **argv)
 	@endcode
  */
 int pkgmgr_installer_get_force_removal(pkgmgr_installer *pi);
+int pkgmgr_installer_get_no_removal(pkgmgr_installer *pi);
 
 /**
 	@brief		Send a app status signal
