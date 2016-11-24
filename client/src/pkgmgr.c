@@ -454,7 +454,6 @@ API int pkgmgr_client_usr_install(pkgmgr_client *pc, const char *pkg_type,
 	GVariantBuilder *builder = NULL;
 	GVariant *args = NULL;
 	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
-	char *pkgtype;
 	struct cb_info *cb_info;
 
 	if (pc == NULL || pkg_path == NULL) {
@@ -477,12 +476,6 @@ API int pkgmgr_client_usr_install(pkgmgr_client *pc, const char *pkg_type,
 		return PKGMGR_R_EINVAL;
 	}
 
-	/* TODO: check pkg's type on server-side */
-	if (pkg_type == NULL)
-		pkgtype = __get_type_from_path(pkg_path);
-	else
-		pkgtype = strdup(pkg_type);
-
 	/* build arguments */
 	builder = g_variant_builder_new(G_VARIANT_TYPE("as"));
 	if (client->tep_path) {
@@ -498,8 +491,7 @@ API int pkgmgr_client_usr_install(pkgmgr_client *pc, const char *pkg_type,
 	g_variant_builder_unref(builder);
 
 	ret = pkgmgr_client_connection_send_request(client, "install",
-			g_variant_new("(uss@as)", uid, pkgtype, pkg_path, args),
-			&result);
+			g_variant_new("(us@as)", uid, pkg_path, args), &result);
 	if (ret != PKGMGR_R_OK) {
 		ERR("request failed: %d", ret);
 		return ret;
@@ -557,8 +549,6 @@ API int pkgmgr_client_usr_reinstall(pkgmgr_client *pc, const char *pkg_type,
 	int ret = PKGMGR_R_ECOMM;
 	char *req_key = NULL;
 	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
-	char *pkgtype;
-	pkgmgrinfo_pkginfo_h handle;
 	struct cb_info *cb_info;
 
 	if (pc == NULL || pkgid == NULL) {
@@ -571,19 +561,8 @@ API int pkgmgr_client_usr_reinstall(pkgmgr_client *pc, const char *pkg_type,
 		return PKGMGR_R_EINVAL;
 	}
 
-	ret = pkgmgrinfo_pkginfo_get_usr_pkginfo(pkgid, uid, &handle);
-	if (ret < 0)
-		return PKGMGR_R_EINVAL;
-
-	ret = pkgmgrinfo_pkginfo_get_type(handle, &pkgtype);
-	if (ret < 0) {
-		pkgmgrinfo_pkginfo_destroy_pkginfo(handle);
-		return PKGMGR_R_ERROR;
-	}
-
 	ret = pkgmgr_client_connection_send_request(client, "reinstall",
-			g_variant_new("(uss)", uid, pkgtype, pkgid), &result);
-	pkgmgrinfo_pkginfo_destroy_pkginfo(handle);
+			g_variant_new("(us)", uid, pkgid), &result);
 	if (ret != PKGMGR_R_OK) {
 		ERR("request failed: %d", ret);
 		return ret;
@@ -626,7 +605,6 @@ API int pkgmgr_client_usr_mount_install(pkgmgr_client *pc, const char *pkg_type,
 	GVariantBuilder *builder = NULL;
 	GVariant *args = NULL;
 	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
-	char *pkgtype;
 	struct cb_info *cb_info;
 
 	if (pc == NULL || pkg_path == NULL) {
@@ -649,12 +627,6 @@ API int pkgmgr_client_usr_mount_install(pkgmgr_client *pc, const char *pkg_type,
 		return PKGMGR_R_EINVAL;
 	}
 
-	/* TODO: check pkg's type on server-side */
-	if (pkg_type == NULL)
-		pkgtype = __get_type_from_path(pkg_path);
-	else
-		pkgtype = strdup(pkg_type);
-
 	/* build arguments */
 	builder = g_variant_builder_new(G_VARIANT_TYPE("as"));
 	if (client->tep_path) {
@@ -670,8 +642,7 @@ API int pkgmgr_client_usr_mount_install(pkgmgr_client *pc, const char *pkg_type,
 	g_variant_builder_unref(builder);
 
 	ret = pkgmgr_client_connection_send_request(client, "mount_install",
-			g_variant_new("(uss@as)", uid, pkgtype, pkg_path, args),
-			&result);
+			g_variant_new("(us@as)", uid, pkg_path, args), &result);
 	if (ret != PKGMGR_R_OK) {
 		ERR("request failed: %d", ret);
 		return ret;
@@ -729,8 +700,6 @@ API int pkgmgr_client_usr_uninstall(pkgmgr_client *pc, const char *pkg_type,
 	int ret = PKGMGR_R_ECOMM;
 	char *req_key = NULL;
 	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
-	char *pkgtype;
-	pkgmgrinfo_pkginfo_h handle;
 	struct cb_info *cb_info;
 
 	if (pc == NULL || pkgid == NULL) {
@@ -743,33 +712,20 @@ API int pkgmgr_client_usr_uninstall(pkgmgr_client *pc, const char *pkg_type,
 		return PKGMGR_R_EINVAL;
 	}
 
-	ret = pkgmgrinfo_pkginfo_get_usr_pkginfo(pkgid, uid, &handle);
-	if (ret < 0)
-		return PKGMGR_R_EINVAL;
-
-	ret = pkgmgrinfo_pkginfo_get_type(handle, &pkgtype);
-	if (ret < 0) {
-		pkgmgrinfo_pkginfo_destroy_pkginfo(handle);
-		return PKGMGR_R_ERROR;
-	}
-
 	ret = pkgmgr_client_connection_send_request(client, "uninstall",
-			g_variant_new("(uss)", uid, pkgtype, pkgid), &result);
+			g_variant_new("(us)", uid, pkgid), &result);
 	if (ret != PKGMGR_R_OK) {
 		ERR("request failed: %d", ret);
-		pkgmgrinfo_pkginfo_destroy_pkginfo(handle);
 		return ret;
 	}
 
 	g_variant_get(result, "(i&s)", &ret, &req_key);
 	if (req_key == NULL) {
 		g_variant_unref(result);
-		pkgmgrinfo_pkginfo_destroy_pkginfo(handle);
 		return PKGMGR_R_ECOMM;
 	}
 	if (ret != PKGMGR_R_OK) {
 		g_variant_unref(result);
-		pkgmgrinfo_pkginfo_destroy_pkginfo(handle);
 		return ret;
 	}
 
@@ -785,8 +741,6 @@ API int pkgmgr_client_usr_uninstall(pkgmgr_client *pc, const char *pkg_type,
 		return ret;
 	}
 	client->cb_info_list = g_list_append(client->cb_info_list, cb_info);
-
-	pkgmgrinfo_pkginfo_destroy_pkginfo(handle);
 
 	return cb_info->req_id;
 }
@@ -808,7 +762,7 @@ API int pkgmgr_client_usr_move(pkgmgr_client *pc, const char *pkg_type,
 	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
 	struct cb_info *cb_info;
 
-	if (pc == NULL || pkg_type == NULL || pkgid == NULL) {
+	if (pc == NULL || pkgid == NULL) {
 		ERR("invalid parameter");
 		return PKGMGR_R_EINVAL;
 	}
@@ -823,8 +777,7 @@ API int pkgmgr_client_usr_move(pkgmgr_client *pc, const char *pkg_type,
 	}
 
 	ret = pkgmgr_client_connection_send_request(client, "move",
-			g_variant_new("(ussi)", uid, pkg_type, pkgid,
-				move_type), &result);
+			g_variant_new("(usi)", uid, pkgid, move_type), &result);
 	if (ret != PKGMGR_R_OK) {
 		ERR("request failed: %d", ret);
 		return ret;
@@ -864,7 +817,7 @@ API int pkgmgr_client_usr_activate(pkgmgr_client *pc, const char *pkg_type,
 	GVariantBuilder *builder;
 	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
 
-	if (pc == NULL || pkgid == NULL || pkg_type == NULL) {
+	if (pc == NULL || pkgid == NULL) {
 		ERR("invalid parameter");
 		return PKGMGR_R_EINVAL;
 	}
@@ -873,8 +826,7 @@ API int pkgmgr_client_usr_activate(pkgmgr_client *pc, const char *pkg_type,
 	g_variant_builder_add(builder, "s", pkgid);
 
 	ret = pkgmgr_client_connection_send_request(client, "enable_pkgs",
-			g_variant_new("(usas)", uid, pkg_type, builder),
-			&result);
+			g_variant_new("(uas)", uid, builder), &result);
 	g_variant_builder_unref(builder);
 	if (ret != PKGMGR_R_OK) {
 		ERR("request failed: %d", ret);
@@ -905,7 +857,7 @@ API int pkgmgr_client_usr_activate_packages(pkgmgr_client *pc,
 	struct cb_info *cb_info;
 	int i;
 
-	if (pc == NULL || pkgids == NULL || pkg_type == NULL || n_pkgs < 1) {
+	if (pc == NULL || pkgids == NULL || n_pkgs < 1) {
 		ERR("invalid parameter");
 		return PKGMGR_R_EINVAL;
 	}
@@ -920,8 +872,7 @@ API int pkgmgr_client_usr_activate_packages(pkgmgr_client *pc,
 		g_variant_builder_add(builder, "s", pkgids[i]);
 
 	ret = pkgmgr_client_connection_send_request(client, "enable_pkgs",
-			g_variant_new("(usas)", uid, pkg_type, builder),
-			&result);
+			g_variant_new("(uas)", uid, builder), &result);
 	g_variant_builder_unref(builder);
 	if (ret != PKGMGR_R_OK) {
 		ERR("request failed: %d", ret);
@@ -970,7 +921,7 @@ API int pkgmgr_client_usr_deactivate(pkgmgr_client *pc, const char *pkg_type,
 	int ret = PKGMGR_R_ECOMM;
 	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
 
-	if (pc == NULL || pkgid == NULL || pkg_type == NULL) {
+	if (pc == NULL || pkgid == NULL) {
 		ERR("invalid parameter");
 		return PKGMGR_R_EINVAL;
 	}
@@ -979,8 +930,7 @@ API int pkgmgr_client_usr_deactivate(pkgmgr_client *pc, const char *pkg_type,
 	g_variant_builder_add(builder, "s", pkgid);
 
 	ret = pkgmgr_client_connection_send_request(client, "disable_pkgs",
-			g_variant_new("(usas)", uid, pkg_type, builder),
-			&result);
+			g_variant_new("(uas)", uid, builder), &result);
 	g_variant_builder_unref(builder);
 	if (ret != PKGMGR_R_OK) {
 		ERR("request failed: %d", ret);
@@ -1011,7 +961,7 @@ API int pkgmgr_client_usr_deactivate_packages(pkgmgr_client *pc,
 	struct cb_info *cb_info;
 	int i;
 
-	if (pc == NULL || pkgids == NULL || pkg_type == NULL || n_pkgs < 1) {
+	if (pc == NULL || pkgids == NULL || n_pkgs < 1) {
 		ERR("invalid parameter");
 		return PKGMGR_R_EINVAL;
 	}
@@ -1026,7 +976,7 @@ API int pkgmgr_client_usr_deactivate_packages(pkgmgr_client *pc,
 		g_variant_builder_add(builder, "s", pkgids[i]);
 
 	ret = pkgmgr_client_connection_send_request(client, "disable_pkgs",
-		g_variant_new("(usas)", uid, pkg_type, builder), &result);
+		g_variant_new("(uas)", uid, builder), &result);
 	g_variant_builder_unref(builder);
 	if (ret != PKGMGR_R_OK) {
 		ERR("request failed: %d", ret);
@@ -1283,7 +1233,7 @@ API int pkgmgr_client_usr_clear_user_data(pkgmgr_client *pc,
 	int ret;
 	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
 
-	if (pc == NULL || pkg_type == NULL || appid == NULL) {
+	if (pc == NULL || appid == NULL) {
 		ERR("invalid parameter");
 		return PKGMGR_R_EINVAL;
 	}
@@ -1294,7 +1244,7 @@ API int pkgmgr_client_usr_clear_user_data(pkgmgr_client *pc,
 	}
 
 	ret = pkgmgr_client_connection_send_request(client, "cleardata",
-			g_variant_new("(uss)", uid, pkg_type, appid), &result);
+			g_variant_new("(us)", uid, appid), &result);
 	if (ret == PKGMGR_R_OK) {
 		ERR("request failed: %d", ret);
 		return ret;
