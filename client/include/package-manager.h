@@ -843,6 +843,19 @@ int pkgmgr_client_get_total_package_size_info(pkgmgr_client *pc, pkgmgr_total_pk
 int pkgmgr_client_usr_get_total_package_size_info(pkgmgr_client *pc, pkgmgr_total_pkg_size_info_receive_cb result_cb, void *user_data, uid_t uid);
 
 /**
+ * @brief		Gets size information of each installed packages.
+ * @details		The package size info is asynchronously obtained by callback function added by pkgmgr_client_listen_status.
+ *
+ * @return 0 on success, otherwise a negative error value
+ * @retval #PKGMGR_R_OK			Successful
+ * @retval #PKGMGR_R_EINVAL		Invalid parameter
+ * @retval #PKGMGR_R_ECOMM		communication error
+ * @retval #PKGMGR_R_ERROR		Internal error
+ */
+int pkgmgr_client_request_size_info(void);
+int pkgmgr_client_usr_request_size_info(uid_t uid);
+
+/**
  * @brief	This API removes cache directories
  *
  * This API is for package-manager client application.\n
