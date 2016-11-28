@@ -2119,3 +2119,34 @@ API int pkgmgr_client_free_pkginfo(pkgmgr_info *info)
 
 	return PKGMGR_R_OK;
 }
+
+API int pkgmgr_client_usr_set_app_label(pkgmgr_client *pc, char *appid,
+		char *label, uid_t uid)
+{
+	GVariant *result;
+	int ret = -1;
+	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
+
+	if (pc == NULL || appid == NULL || label == NULL) {
+		ERR("Invalid parameter");
+		return PKGMGR_R_EINVAL;
+	}
+
+	ret = pkgmgr_client_connection_send_request(client,
+			"set_app_label",
+			g_variant_new("(uss)", uid, appid, label), &result);
+	if (ret != PKGMGR_R_OK) {
+		ERR("Request failed: %d", ret);
+		return ret;
+	}
+
+	g_variant_get(result, "(i)", &ret);
+	g_variant_unref(result);
+
+	return ret;
+}
+
+API int pkgmgr_client_set_app_label(pkgmgr_client *pc, char *appid, char *label)
+{
+	return pkgmgr_client_usr_set_app_label(pc, appid, label, _getuid());
+}
