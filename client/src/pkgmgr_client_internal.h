@@ -68,8 +68,6 @@ int pkgmgr_client_connection_send_request(struct pkgmgr_client_t *pc,
 typedef package_manager_pkg_info_t package_manager_app_info_t;
 
 
-const char *_get_pkg_type(const char *pkgid, uid_t uid);
-
 package_manager_pkg_info_t *_pkg_malloc_appinfo(int num);
 
 pkg_plugin_set *_pkg_plugin_load_library(const char *pkg_type,
@@ -104,8 +102,6 @@ time_t _get_info_time(const char *key,
 #define PKG_ARGC_MAX		 16
 
 void _app_str_trim(char *input);
-char *_get_backend_path(const char *input_path);
-char *_get_backend_path_with_type(const char *type);
 
 int _get_mime_from_file(const char *filename, char *mimetype, int len);
 int _get_mime_extension(const char *mimetype, char *ext, int len);
