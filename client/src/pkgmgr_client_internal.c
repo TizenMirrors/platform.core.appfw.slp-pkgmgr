@@ -329,9 +329,16 @@ pkg_plugin_set *_pkg_plugin_load_library(const char *pkg_type,
 	int i;
 	bool (*on_load)(pkg_plugin_set *plugin);
 
-	if (library_path == NULL) {
-		ERR("pkg library path = [%s]", library_path);
+	if (library_path == NULL || pkg_type == NULL) {
+		ERR("invalid parameter");
 		return NULL;
+	}
+
+	for (i = 0; plugin_set_list[i]; i++) {
+		if (strcmp(plugin_set_list[i]->pkg_type, pkg_type) == 0) {
+			DBG("already loaded [%s]", library_path);
+			return plugin_set_list[i];
+		}
 	}
 
 	if ((library_handle = dlopen(library_path, RTLD_LAZY)) == NULL) {
@@ -344,13 +351,6 @@ pkg_plugin_set *_pkg_plugin_load_library(const char *pkg_type,
 		ERR("can not find symbol");
 		dlclose(library_handle);
 		return NULL;
-	}
-
-	for (i = 0; plugin_set_list[i]; i++) {
-		if (strcmp(plugin_set_list[i]->pkg_type, pkg_type) == 0) {
-			DBG("already loaded [%s]", library_path);
-			return plugin_set_list[i];
-		}
 	}
 
 	plugin_set_list[i] = (pkg_plugin_set *)calloc(1, sizeof(pkg_plugin_set));
