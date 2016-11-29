@@ -663,6 +663,77 @@ int pkgmgr_installer_get_force_removal(pkgmgr_installer *pi);
 int pkgmgr_installer_get_no_removal(pkgmgr_installer *pi);
 
 /**
+	@brief		Get if the request is for keep-rwdata
+	@pre		pkgmgr_installer_receive_request() must be called.
+	@post		None
+	@see		pkgmgr_installer_receive_request
+	@param[in]	pi	pkgmgr_installer object
+	@return		Operation result
+	@retval		0 if a request is not for keep-rwdata
+	@retval		1 if a request is for keep-rwdata
+	@remark		Keep RW-data of updated RO pkg.
+	@code
+#include <pkgmgr_installer.h>
+int main(int argc, char **argv)
+{
+	pkgmgr_installer *pi;
+	int r = 0;
+	int force_remove = 0;
+
+	pi = pkgmgr_installer_new();
+	if(!pi) return -1;
+	if(pkgmgr_installer_receive_request(pi, argc, argv)) {
+		r = -1;
+		goto CLEANUP_RET;
+	}
+	force_remove = pkgmgr_installer_get_keep_rwdata(pi);
+
+	// Do something...
+
+	pkgmgr_installer_free(pi);
+	return r;
+}
+	@endcode
+ */
+int pkgmgr_installer_get_keep_rwdata(pkgmgr_installer *pi);
+
+/**
+	@brief		Get if the request is for partial-rw
+	@pre		pkgmgr_installer_receive_request() must be called.
+	@post		None
+	@see		pkgmgr_installer_receive_request
+	@param[in]	pi	pkgmgr_installer object
+	@return		Operation result
+	@retval		0 if a request is not for partial-rw
+	@retval		1 if a request is for partial-rw
+	@remark		For install/update/uninstall of stubs of RO pkg
+			on RW partitions
+	@code
+#include <pkgmgr_installer.h>
+int main(int argc, char **argv)
+{
+	pkgmgr_installer *pi;
+	int r = 0;
+	int force_remove = 0;
+
+	pi = pkgmgr_installer_new();
+	if(!pi) return -1;
+	if(pkgmgr_installer_receive_request(pi, argc, argv)) {
+		r = -1;
+		goto CLEANUP_RET;
+	}
+	force_remove = pkgmgr_installer_get_partial_rw(pi);
+
+	// Do something...
+
+	pkgmgr_installer_free(pi);
+	return r;
+}
+	@endcode
+ */
+int pkgmgr_installer_get_partial_rw(pkgmgr_installer *pi);
+
+/**
 	@brief		Send a app status signal
 	@pre		None
 	@post		None
