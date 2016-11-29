@@ -56,6 +56,8 @@
 #define OPTVAL_FORCE_REMOVAL 1001
 #define OPTVAL_PRELOAD_RW 1002
 #define OPTVAL_NO_REMOVAL 1003
+#define OPTVAL_KEEP_RWDATA 1004
+#define OPTVAL_PARTIAL_RW 1005
 
 /* Supported options */
 const char *short_opts = "k:l:i:d:c:m:t:o:r:p:s:b:e:M:y:u:w:D:A:q";
@@ -76,10 +78,12 @@ const struct option long_opts[] = {
 	{ "direct-manifest-install", 1, NULL, 'y' },
 	{ "mount-install", 1, NULL, 'w' },
 	{ "recovery", 1, NULL, 'b' },
-	{ "preload", 0, NULL, OPTVAL_PRELOAD },
-	{ "force-remove", 0, NULL, OPTVAL_FORCE_REMOVAL },
-	{ "preload-rw", 0, NULL, OPTVAL_PRELOAD_RW },
-	{ "no-remove", 0, NULL, OPTVAL_NO_REMOVAL },
+	{ "preload", 0, NULL, OPTVAL_PRELOAD }, /* for preload RO */
+	{ "force-remove", 0, NULL, OPTVAL_FORCE_REMOVAL }, /* for preload RO/RW */
+	{ "preload-rw", 0, NULL, OPTVAL_PRELOAD_RW }, /* for preload RW */
+	{ "no-remove", 0, NULL, OPTVAL_NO_REMOVAL }, /* for preload RW */
+	{ "keep-rwdata", 0, NULL, OPTVAL_KEEP_RWDATA }, /* for preload RW */
+	{ "partial-rw", 0, NULL, OPTVAL_PARTIAL_RW }, /* for preload RO */
 	{ 0, 0, 0, 0 }	/* sentinel */
 };
 
@@ -99,6 +103,8 @@ struct pkgmgr_installer {
 	int force_removal;
 	int is_preload_rw;
 	int no_removal;
+	int keep_rwdata;
+	int partial_rw;
 	GDBusConnection *conn;
 };
 
@@ -386,6 +392,14 @@ pkgmgr_installer_receive_request(pkgmgr_installer *pi,
 			pi->no_removal = 1;
 			DBG("no-remove request [%d]", pi->no_removal);
 			break;
+		case OPTVAL_KEEP_RWDATA:	/* request for keep-rwdata */
+			pi->keep_rwdata = 1;
+			DBG("keep-rwdata request [%d]", pi->keep_rwdata);
+			break;
+		case OPTVAL_PARTIAL_RW:	/* request for partial-rw */
+			pi->partial_rw = 1;
+			DBG("partial-rw request [%d]", pi->partial_rw);
+			break;
 		case 'k':	/* session id */
 			if (pi->session_id)
 				free(pi->session_id);
@@ -656,6 +670,18 @@ API int pkgmgr_installer_get_no_removal(pkgmgr_installer *pi)
 {
 	CHK_PI_RET(PKGMGR_REQ_INVALID);
 	return pi->no_removal;
+}
+
+API int pkgmgr_installer_get_keep_rwdata(pkgmgr_installer *pi)
+{
+	CHK_PI_RET(PKGMGR_REQ_INVALID);
+	return pi->keep_rwdata;
+}
+
+API int pkgmgr_installer_get_partial_rw(pkgmgr_installer *pi)
+{
+	CHK_PI_RET(PKGMGR_REQ_INVALID);
+	return pi->partial_rw;
 }
 
 API int pkgmgr_installer_send_app_uninstall_signal(pkgmgr_installer *pi,
