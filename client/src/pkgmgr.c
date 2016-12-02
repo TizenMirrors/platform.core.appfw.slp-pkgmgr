@@ -454,6 +454,7 @@ API int pkgmgr_client_usr_install(pkgmgr_client *pc, const char *pkg_type,
 	GVariantBuilder *builder = NULL;
 	GVariant *args = NULL;
 	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
+	char *pkgtype;
 	struct cb_info *cb_info;
 
 	if (pc == NULL || pkg_path == NULL) {
@@ -476,6 +477,9 @@ API int pkgmgr_client_usr_install(pkgmgr_client *pc, const char *pkg_type,
 		return PKGMGR_R_EINVAL;
 	}
 
+	if (pkg_type)
+		pkgtype = strdup(pkg_type);
+
 	/* build arguments */
 	builder = g_variant_builder_new(G_VARIANT_TYPE("as"));
 	if (client->tep_path) {
@@ -491,7 +495,8 @@ API int pkgmgr_client_usr_install(pkgmgr_client *pc, const char *pkg_type,
 	g_variant_builder_unref(builder);
 
 	ret = pkgmgr_client_connection_send_request(client, "install",
-			g_variant_new("(us@as)", uid, pkg_path, args), &result);
+			g_variant_new("(uss@as)", uid, pkgtype, pkg_path, args),
+			&result);
 	if (ret != PKGMGR_R_OK) {
 		ERR("request failed: %d", ret);
 		return ret;
@@ -605,6 +610,7 @@ API int pkgmgr_client_usr_mount_install(pkgmgr_client *pc, const char *pkg_type,
 	GVariantBuilder *builder = NULL;
 	GVariant *args = NULL;
 	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
+	char *pkgtype;
 	struct cb_info *cb_info;
 
 	if (pc == NULL || pkg_path == NULL) {
@@ -627,6 +633,9 @@ API int pkgmgr_client_usr_mount_install(pkgmgr_client *pc, const char *pkg_type,
 		return PKGMGR_R_EINVAL;
 	}
 
+	if (pkg_type)
+		pkgtype = strdup(pkg_type);
+
 	/* build arguments */
 	builder = g_variant_builder_new(G_VARIANT_TYPE("as"));
 	if (client->tep_path) {
@@ -642,7 +651,8 @@ API int pkgmgr_client_usr_mount_install(pkgmgr_client *pc, const char *pkg_type,
 	g_variant_builder_unref(builder);
 
 	ret = pkgmgr_client_connection_send_request(client, "mount_install",
-			g_variant_new("(us@as)", uid, pkg_path, args), &result);
+			g_variant_new("(uss@as)", uid, pkgtype, pkg_path, args),
+			&result);
 	if (ret != PKGMGR_R_OK) {
 		ERR("request failed: %d", ret);
 		return ret;
