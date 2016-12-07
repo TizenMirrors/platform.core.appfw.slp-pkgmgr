@@ -53,6 +53,7 @@ struct pkgmgr_client_t {
 	GList *cb_info_list;
 	char *tep_path;
 	bool tep_move;
+	bool debug_mode;
 };
 
 int pkgmgr_client_connection_connect(struct pkgmgr_client_t *pc);
