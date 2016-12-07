@@ -454,7 +454,7 @@ API int pkgmgr_client_usr_install(pkgmgr_client *pc, const char *pkg_type,
 	GVariantBuilder *builder = NULL;
 	GVariant *args = NULL;
 	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
-	char *pkgtype;
+	char *pkgtype = NULL;
 	struct cb_info *cb_info;
 
 	if (pc == NULL || pkg_path == NULL) {
@@ -610,7 +610,7 @@ API int pkgmgr_client_usr_mount_install(pkgmgr_client *pc, const char *pkg_type,
 	GVariantBuilder *builder = NULL;
 	GVariant *args = NULL;
 	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
-	char *pkgtype;
+	char *pkgtype = NULL;
 	struct cb_info *cb_info;
 
 	if (pc == NULL || pkg_path == NULL) {
