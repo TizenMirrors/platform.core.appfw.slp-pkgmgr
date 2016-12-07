@@ -60,7 +60,7 @@
 #define OPTVAL_PARTIAL_RW 1005
 
 /* Supported options */
-const char *short_opts = "k:l:i:d:c:m:t:o:r:p:s:b:e:M:y:u:w:D:A:q";
+const char *short_opts = "k:l:i:d:c:m:t:o:r:p:s:b:e:M:y:u:w:D:A:qG";
 const struct option long_opts[] = {
 	{ "session-id", 1, NULL, 'k' },
 	{ "license-path", 1, NULL, 'l' },
@@ -78,6 +78,7 @@ const struct option long_opts[] = {
 	{ "direct-manifest-install", 1, NULL, 'y' },
 	{ "mount-install", 1, NULL, 'w' },
 	{ "recovery", 1, NULL, 'b' },
+	{ "debug-mode", 0, NULL, 'G' },
 	{ "preload", 0, NULL, OPTVAL_PRELOAD }, /* for preload RO */
 	{ "force-remove", 0, NULL, OPTVAL_FORCE_REMOVAL }, /* for preload RO/RW */
 	{ "preload-rw", 0, NULL, OPTVAL_PRELOAD_RW }, /* for preload RW */
@@ -105,6 +106,7 @@ struct pkgmgr_installer {
 	int no_removal;
 	int keep_rwdata;
 	int partial_rw;
+	int debug_mode;
 	GDBusConnection *conn;
 };
 
@@ -564,6 +566,10 @@ pkgmgr_installer_receive_request(pkgmgr_installer *pi,
 			pi->target_uid = (uid_t)atoi(optarg);
 			break;
 
+		case 'G': /* debug mode */
+			pi->debug_mode = 1;
+			break;
+
 			/* Otherwise */
 		case '?':	/* Not an option */
 			break;
@@ -682,6 +688,12 @@ API int pkgmgr_installer_get_partial_rw(pkgmgr_installer *pi)
 {
 	CHK_PI_RET(PKGMGR_REQ_INVALID);
 	return pi->partial_rw;
+}
+
+API int pkgmgr_installer_get_debug_mode(pkgmgr_installer *pi)
+{
+	CHK_PI_RET(PKGMGR_REQ_INVALID);
+	return pi->debug_mode;
 }
 
 API int pkgmgr_installer_send_app_uninstall_signal(pkgmgr_installer *pi,

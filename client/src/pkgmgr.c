@@ -490,6 +490,8 @@ API int pkgmgr_client_usr_install(pkgmgr_client *pc, const char *pkg_type,
 		g_variant_builder_add(builder, "s",
 				client->tep_move ? "tep_move" : "tep_copy");
 	}
+	if (client->debug_mode)
+		g_variant_builder_add(builder, "s", "-G");
 
 	args = g_variant_new("as", builder);
 	g_variant_builder_unref(builder);
@@ -2161,4 +2163,18 @@ API int pkgmgr_client_usr_set_app_label(pkgmgr_client *pc, char *appid,
 API int pkgmgr_client_set_app_label(pkgmgr_client *pc, char *appid, char *label)
 {
 	return pkgmgr_client_usr_set_app_label(pc, appid, label, _getuid());
+}
+
+API int pkgmgr_client_set_debug_mode(pkgmgr_client *pc, bool debug_mode)
+{
+	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
+
+	if (pc == NULL) {
+		ERR("invalid parameter");
+		return PKGMGR_R_EINVAL;
+	}
+
+	client->debug_mode = debug_mode;
+
+	return PKGMGR_R_OK;
 }
