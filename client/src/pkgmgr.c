@@ -495,7 +495,8 @@ API int pkgmgr_client_usr_install(pkgmgr_client *pc, const char *pkg_type,
 	g_variant_builder_unref(builder);
 
 	ret = pkgmgr_client_connection_send_request(client, "install",
-			g_variant_new("(uss@as)", uid, pkgtype, pkg_path, args),
+			g_variant_new("(uss@as)", uid, pkgtype ? pkgtype : "",
+				pkg_path, args),
 			&result);
 	if (ret != PKGMGR_R_OK) {
 		ERR("request failed: %d", ret);
@@ -651,7 +652,8 @@ API int pkgmgr_client_usr_mount_install(pkgmgr_client *pc, const char *pkg_type,
 	g_variant_builder_unref(builder);
 
 	ret = pkgmgr_client_connection_send_request(client, "mount_install",
-			g_variant_new("(uss@as)", uid, pkgtype, pkg_path, args),
+			g_variant_new("(uss@as)", uid, pkgtype ? pkgtype : "",
+				pkg_path, args),
 			&result);
 	if (ret != PKGMGR_R_OK) {
 		ERR("request failed: %d", ret);
