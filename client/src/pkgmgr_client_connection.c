@@ -214,10 +214,10 @@ static void __signal_handler(GDBusConnection *conn, const gchar *sender_name,
 	}
 
 	/* each cb_data can only has one callback */
-	if (cb_info->event_cb)
+	if (cb_info->event_cb && strcmp(appid, "") == 0)
 		cb_info->event_cb(target_uid, cb_info->req_id,
 				pkg_type, pkgid, key, val, NULL, cb_info->data);
-	else if (cb_info->app_event_cb)
+	else if (cb_info->app_event_cb && strcmp(appid, "") != 0)
 		cb_info->app_event_cb(target_uid, cb_info->req_id,
 				pkg_type, pkgid, appid, key, val, NULL,
 				cb_info->data);
