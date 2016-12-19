@@ -117,8 +117,6 @@ extern "C" {
 
 /** @} */
 
-#define PKG_SIZE_INFO_PATH "/tmp/pkgmgr"
-
 #define PKG_SIZE_INFO_TOTAL "__TOTAL__"
 #define PKG_CLEAR_ALL_CACHE "__ALL__"
 /**

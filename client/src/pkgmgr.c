@@ -46,8 +46,6 @@
 #define API __attribute__ ((visibility("default")))
 #endif
 
-#define PKG_TMP_PATH tzplatform_mkpath(TZ_USER_APP, "tmp")
-
 #define BINSH_NAME	"/bin/sh"
 #define BINSH_SIZE	7
 
@@ -158,62 +156,13 @@ static void __free_cb_info(struct cb_info *cb_info)
 	free(cb_info);
 }
 
-static int __sync_process(const char *req_key)
-{
-	int ret;
-	char info_file[PKG_STRING_LEN_MAX] = {'\0', };
-	int result = -1;
-	int check_cnt = 0;
-	FILE *fp;
-	char buf[PKG_STRING_LEN_MAX] = {0, };
-
-	snprintf(info_file, PKG_STRING_LEN_MAX, "%s/%s", PKG_SIZE_INFO_PATH, req_key);
-	while (1) {
-		check_cnt++;
-
-		if (access(info_file, F_OK) == 0) {
-			fp = fopen(info_file, "r");
-			if (fp == NULL) {
-				DBG("file is not generated yet.... wait\n");
-				usleep(100 * 1000);	/* 100ms sleep*/
-				continue;
-			}
-
-			if (fgets(buf, PKG_STRING_LEN_MAX, fp) == NULL) {
-				ERR("failed to read info file");
-				fclose(fp);
-				break;
-			}
-			fclose(fp);
-
-			DBG("info_file file is generated, result = %s. \n", buf);
-			result = atoi(buf);
-			break;
-		}
-
-		DBG("file is not generated yet.... wait\n");
-		usleep(100 * 1000);	/* 100ms sleep*/
-
-		if (check_cnt > 6000) {	/* 60s * 10 time over*/
-			ERR("wait time over!!\n");
-			break;
-		}
-	}
-
-	ret = remove(info_file);
-	if (ret < 0)
-		ERR("file is can not remove[%s, %d]\n", info_file, ret);
-
-	return result;
-}
-
 static int __get_size_process(pkgmgr_client *pc, const char *pkgid, uid_t uid,
 		pkgmgr_getsize_type get_type, pkgmgr_handler event_cb,
 		void *data)
 {
 	GVariant *result;
 	int ret = PKGMGR_R_ECOMM;
-	char *req_key = NULL;
+	long long size_info = 0;
 	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
 
 	if (pc == NULL || pkgid == NULL) {
@@ -226,26 +175,27 @@ static int __get_size_process(pkgmgr_client *pc, const char *pkgid, uid_t uid,
 		return PKGMGR_R_EINVAL;
 	}
 
-	ret = pkgmgr_client_connection_send_request(client, "getsize",
+	ret = pkgmgr_client_connection_send_request(client, "getsize_sync",
 			g_variant_new("(usi)", uid, pkgid, get_type), &result);
 	if (ret != PKGMGR_R_OK) {
 		ERR("request failed: %d", ret);
 		return ret;
 	}
 
-	g_variant_get(result, "(i&s)", &ret, &req_key);
-	if (req_key == NULL) {
-		g_variant_unref(result);
-		return PKGMGR_R_ECOMM;
-	}
+	g_variant_get(result, "(ix)", &ret, &size_info);
 	if (ret != PKGMGR_R_OK) {
+		ERR("request result failed: %d", ret);
 		g_variant_unref(result);
 		return ret;
 	}
 
-	ret = __sync_process(req_key);
-	if (ret < 0)
-		ERR("get size failed, ret=%d\n", ret);
+	if (size_info < 0) {
+		ERR("invalid size_info=(%d)", size_info);
+		ret = -1;
+	} else {
+		ret = (int)size_info;
+		DBG("size_info(%lld), return size(%d)", size_info, ret);
+	}
 
 	g_variant_unref(result);
 
