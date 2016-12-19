@@ -550,6 +550,7 @@ int pkgmgr_client_activate_global_app_for_uid(pkgmgr_client *pc, const char *app
  *
  * This API is for package-manager client application.\n
  *
+ * @remarks	You should call this function with regular uid
  * @param[in]	pc	pkgmgr_client
  * @param[in]	pkg_type		package type
  * @param[in]	pkgid	package id
@@ -750,6 +751,7 @@ int pkgmgr_client_usr_request_size_info(uid_t uid);
  *
  * This API is for package-manager client application.\n
  *
+ * @remarks	You should call this function with regular uid
  * @param[in]	pkgid			package id
  * @return	0 if success, error code(<0) if fail\n
  * @retval	PKGMGR_R_OK	success
@@ -765,6 +767,7 @@ int pkgmgr_client_usr_clear_cache_dir(const char *pkgid, uid_t uid);
  *
  * This API is for package-manager client application.\n
  *
+ * @remarks	You should call this function with regular uid
  * @return	0 if success, error code(<0) if fail\n
  * @retval	PKGMGR_R_OK	success
  * @retval	PKGMGR_R_EINVAL	invalid argument

@@ -1197,7 +1197,7 @@ API int pkgmgr_client_usr_clear_user_data(pkgmgr_client *pc,
 	int ret;
 	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
 
-	if (pc == NULL || appid == NULL) {
+	if (pc == NULL || appid == NULL || uid == GLOBAL_USER) {
 		ERR("invalid parameter");
 		return PKGMGR_R_EINVAL;
 	}
@@ -1209,7 +1209,7 @@ API int pkgmgr_client_usr_clear_user_data(pkgmgr_client *pc,
 
 	ret = pkgmgr_client_connection_send_request(client, "cleardata",
 			g_variant_new("(us)", uid, appid), &result);
-	if (ret == PKGMGR_R_OK) {
+	if (ret != PKGMGR_R_OK) {
 		ERR("request failed: %d", ret);
 		return ret;
 	}
@@ -1433,7 +1433,7 @@ API int pkgmgr_client_usr_clear_cache_dir(const char *pkgid, uid_t uid)
 	int ret;
 	struct pkgmgr_client_t *client;
 
-	if (pkgid == NULL) {
+	if (pkgid == NULL || uid == GLOBAL_USER) {
 		ERR("invalid parameter");
 		return PKGMGR_R_EINVAL;
 	}
@@ -1470,7 +1470,7 @@ API int pkgmgr_client_clear_usr_all_cache_dir(uid_t uid)
 API int pkgmgr_client_clear_all_cache_dir(void)
 {
 	return pkgmgr_client_usr_clear_cache_dir(
-			PKG_CLEAR_ALL_CACHE, getuid());
+			PKG_CLEAR_ALL_CACHE, _getuid());
 }
 
 API int pkgmgr_client_get_size(pkgmgr_client *pc, const char *pkgid,
