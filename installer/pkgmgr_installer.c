@@ -58,6 +58,7 @@
 #define OPTVAL_NO_REMOVAL 1003
 #define OPTVAL_KEEP_RWDATA 1004
 #define OPTVAL_PARTIAL_RW 1005
+#define OPTVAL_MIGRATE_EXTIMG 1006
 
 /* Supported options */
 const char *short_opts = "k:l:i:d:c:m:t:o:r:p:s:b:e:M:y:u:w:D:A:qG";
@@ -85,6 +86,7 @@ const struct option long_opts[] = {
 	{ "no-remove", 0, NULL, OPTVAL_NO_REMOVAL }, /* for preload RW */
 	{ "keep-rwdata", 0, NULL, OPTVAL_KEEP_RWDATA }, /* for preload RW */
 	{ "partial-rw", 0, NULL, OPTVAL_PARTIAL_RW }, /* for preload RO */
+        { "migrate-extimg", 1, NULL, OPTVAL_MIGRATE_EXTIMG },
 	{ 0, 0, 0, 0 }	/* sentinel */
 };
 
@@ -404,6 +406,19 @@ pkgmgr_installer_receive_request(pkgmgr_installer *pi,
 		case OPTVAL_PARTIAL_RW:	/* request for partial-rw */
 			pi->partial_rw = 1;
 			DBG("partial-rw request [%d]", pi->partial_rw);
+			break;
+		case OPTVAL_MIGRATE_EXTIMG:
+			/* request for legacy extimg migration */
+			if (mode) {
+				r = -EINVAL;
+				goto RET;
+			}
+			mode = OPTVAL_MIGRATE_EXTIMG;
+			pi->request_type = PKGMGR_REQ_MIGRATE_EXTIMG;
+			if (pi->pkgmgr_info)
+				free(pi->pkgmgr_info);
+			pi->pkgmgr_info = strndup(optarg, MAX_STRLEN);
+			DBG("legacy extimg migration requested");
 			break;
 		case 'k':	/* session id */
 			if (pi->session_id)

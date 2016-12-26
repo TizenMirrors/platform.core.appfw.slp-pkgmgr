@@ -2128,3 +2128,29 @@ API int pkgmgr_client_set_debug_mode(pkgmgr_client *pc, bool debug_mode)
 
 	return PKGMGR_R_OK;
 }
+
+API int pkgmgr_client_usr_migrate_external_image(pkgmgr_client *pc,
+		const char *pkgid, uid_t uid)
+{
+	GVariant *result;
+	int ret = PKGMGR_R_ECOMM;
+	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
+
+	if (pc == NULL) {
+		ERR("invalid parameter");
+		return PKGMGR_R_EINVAL;
+	}
+
+	ret = pkgmgr_client_connection_send_request(client,
+			"migrate_external_image",
+			g_variant_new("(us)", uid, pkgid), &result);
+	if (ret != PKGMGR_R_OK) {
+		ERR("request failed: %d", ret);
+		return ret;
+	}
+
+	g_variant_get(result, "(i)", &ret);
+	g_variant_unref(result);
+
+	return ret;
+}
