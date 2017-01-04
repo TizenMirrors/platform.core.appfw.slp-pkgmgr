@@ -112,7 +112,8 @@ struct pkgmgr_installer {
 
 static uid_t g_target_uid;
 
-static const char *__get_signal_name(pkgmgr_installer *pi, const char *key)
+static const char *__get_signal_name(pkgmgr_installer *pi, const char *key,
+		const char *pkg_type)
 {
 	if (strcmp(key, PKGMGR_INSTALLER_INSTALL_PERCENT_KEY_STR) == 0)
 		return key;
@@ -120,6 +121,8 @@ static const char *__get_signal_name(pkgmgr_installer *pi, const char *key)
 		return key;
 	else if (strcmp(key, PKGMGR_INSTALLER_APPID_KEY_STR) == 0)
 		return PKGMGR_INSTALLER_UNINSTALL_EVENT_STR;
+	else if (strcmp(pkg_type, PKGMGR_INSTALLER_CLEAR_CACHE_KEY_STR) == 0)
+		return pkg_type;
 
 	switch (pi->request_type) {
 	case PKGMGR_REQ_INSTALL:
@@ -170,7 +173,7 @@ static int __send_signal_for_event(pkgmgr_installer *pi, const char *pkg_type,
 	if (!sid)
 		sid = "";
 
-	name = __get_signal_name(pi, key);
+	name = __get_signal_name(pi, key, pkg_type);
 	if (name == NULL) {
 		ERR("unknown signal type");
 		return -1;
@@ -248,7 +251,7 @@ static int __send_signal_for_event_for_uid(pkgmgr_installer *pi, uid_t uid,
 
 	data_len = sizeof(size_t) + sizeof(gsize);
 
-	name = __get_signal_name(pi, key);
+	name = __get_signal_name(pi, key, pkg_type);
 	if (name == NULL) {
 		ERR("unknown signal type");
 		return -1;
