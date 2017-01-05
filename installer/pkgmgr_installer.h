@@ -53,6 +53,7 @@ typedef void *pkgmgr_instcertinfo_h;
 #define PKGMGR_INSTALLER_APPID_KEY_STR           "appid"
 #define PKGMGR_INSTALLER_INSTALL_PERCENT_KEY_STR "install_percent"
 #define PKGMGR_INSTALLER_GET_SIZE_KEY_STR        "get_size"
+#define PKGMGR_INSTALLER_CLEAR_CACHE_KEY_STR     "clear_cache"
 
 #define PKGMGR_INSTALLER_INSTALL_EVENT_STR       "install"
 #define PKGMGR_INSTALLER_UNINSTALL_EVENT_STR     "uninstall"
@@ -65,8 +66,6 @@ typedef void *pkgmgr_instcertinfo_h;
 
 #define PKGMGR_INSTALLER_APP_DISABLE_EVENT_STR         "disable_app"
 #define PKGMGR_INSTALLER_APP_ENABLE_EVENT_STR          "enable_app"
-#define PKGMGR_INSTALLER_GLOBAL_APP_DISABLE_FOR_UID    "disable_global_app_for_uid"
-#define PKGMGR_INSTALLER_GLOBAL_APP_ENABLE_FOR_UID     "enable_global_app_for_uid"
 
 #define PKGMGR_INSTALLER_APP_DISABLE_SPLASH_SCREEN_EVENT_STR         "disable_app_splash_screen"
 #define PKGMGR_INSTALLER_APP_ENABLE_SPLASH_SCREEN_EVENT_STR          "enable_app_splash_screen"
