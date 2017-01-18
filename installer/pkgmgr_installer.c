@@ -218,7 +218,7 @@ static int __send_signal_to_agent(uid_t uid, void *data, size_t len)
 		return -1;
 	}
 
-	r = send(fd, data, len, 0);
+	r = send(fd, data, len, MSG_NOSIGNAL);
 	if (r < 0) {
 		ERR("failed to send data: %d", errno);
 		close(fd);
