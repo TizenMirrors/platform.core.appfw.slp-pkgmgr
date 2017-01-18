@@ -86,7 +86,7 @@ const struct option long_opts[] = {
 	{ "no-remove", 0, NULL, OPTVAL_NO_REMOVAL }, /* for preload RW */
 	{ "keep-rwdata", 0, NULL, OPTVAL_KEEP_RWDATA }, /* for preload RW */
 	{ "partial-rw", 0, NULL, OPTVAL_PARTIAL_RW }, /* for preload RO */
-        { "migrate-extimg", 1, NULL, OPTVAL_MIGRATE_EXTIMG },
+	{ "migrate-extimg", 1, NULL, OPTVAL_MIGRATE_EXTIMG },
 	{ 0, 0, 0, 0 }	/* sentinel */
 };
 
