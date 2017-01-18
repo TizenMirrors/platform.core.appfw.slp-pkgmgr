@@ -264,7 +264,6 @@ static int __request_size_info(pkgmgr_client *pc, uid_t uid)
 {
 	GVariant *result;
 	int ret = PKGMGR_R_ECOMM;
-//	char *req_key = NULL;
 	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
 
 	if (pc == NULL) {
@@ -285,14 +284,7 @@ static int __request_size_info(pkgmgr_client *pc, uid_t uid)
 		return ret;
 	}
 
-/*
-	g_variant_get(result, "(i&s)", &ret, &req_key);
-	if (req_key == NULL) {
-		g_variant_unref(result);
-		return PKGMGR_R_ECOMM;
-	}
-*/
-
+	/* just free result here because it cannot return result(reqkey) */
 	g_variant_unref(result);
 
 	return ret;
