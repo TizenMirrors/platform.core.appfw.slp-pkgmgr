@@ -6,22 +6,6 @@ cmake_minimum_required(VERSION 2.6)
 #set(CMAKE_SKIP_BUILD_RPATH true)
 set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS true)
 
-
-### Versioning
-if(DEFINED ${VERSION})
-	message("VERSION: ${VERSION}")
-else()
-	message("VERSION is not defined. set it as 0.1.0")
-	set(VERSION 0.1.0)
-endif()
-if(DEFINED ${VERSION_MAJOR})
-	message("VERSION_MAJOR: ${VERSION_MAJOR}")
-else()
-	message( "VERSION_MAJOR is not defined. set it as 0")
-	set(VERSION_MAJOR 0)
-endif()
-message(STATUS "version/major : ${VERSION} / ${VERSION_MAJOR}")
-
 ### Get required CFLAGS, LDFLAGS from pkg-config
 
 include(FindPkgConfig)
@@ -40,8 +24,8 @@ ENDFOREACH()
 ## pkgmgr_installer object (by youmin.ha)
 # This library is for installer backend
 add_library(pkgmgr_installer SHARED pkgmgr_installer.c)
-set_target_properties(pkgmgr_installer PROPERTIES SOVERSION ${VERSION_MAJOR})
-set_target_properties(pkgmgr_installer PROPERTIES VERSION ${VERSION})
+set_target_properties(pkgmgr_installer PROPERTIES SOVERSION ${MAJORVER})
+set_target_properties(pkgmgr_installer PROPERTIES VERSION ${FULLVER})
 set_target_properties(pkgmgr_installer PROPERTIES COMPILE_FLAGS "${installer_pkgs_CFLAGS_str} -fPIC")
 target_link_libraries(pkgmgr_installer ${installer_pkgs_LDFLAGS})
 

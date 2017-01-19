@@ -90,7 +90,8 @@ Package Manager client types develpoment package for packaging
 cp %{SOURCE1001} %{SOURCE1002} %{SOURCE1003} %{SOURCE1004} %{SOURCE1005} %{SOURCE1006} .
 
 %build
-%cmake .
+MAJORVER=`echo %{version} | awk 'BEGIN {FS="."}{print $1}'`
+%cmake . -DFULLVER=%{version} -DMAJORVER=${MAJORVER}
 
 %__make %{?_smp_mflags}
 

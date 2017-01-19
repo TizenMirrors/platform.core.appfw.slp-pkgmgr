@@ -10,7 +10,7 @@ includedir=@INCLUDEDIR@
 
 Name: package manager types
 Description: SLP package manager's types header
-Version: @VERSION@
+Version: @FULLVER@
 Requires:
 Libs:
 Cflags: -I${includedir}

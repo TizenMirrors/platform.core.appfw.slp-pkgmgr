@@ -8,9 +8,9 @@ exec_prefix=@EXEC_PREFIX@
 libdir=@LIBDIR@
 includedir=@INCLUDEDIR@
 
-Name: package manager 
+Name: package manager
 Description: SLP Package Manager Package
-Version: @VERSION@
+Version: @FULLVER@
 Requires: dlog pkgmgr-types dbus-glib-1
 Libs: -L${libdir} -L${libdir}/pkgmgr -lpkgmgr-client
 Cflags: -I${includedir}
