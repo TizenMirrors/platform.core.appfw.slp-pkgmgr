@@ -488,13 +488,14 @@ int pkgmgr_client_usr_deactivate_packages(pkgmgr_client *pc, const char *pkg_typ
  * @param[in]	pc	pkgmgr_client
  * @param[in]	appid	applicaiton id
  * @param[in]	app_event_cb	user callback
+ * @param[in]	data	user data
  * @return	request_id (>0) if success, error code(<0) if fail\n
  * @retval	PKGMGR_R_OK	success
  * @retval	PKGMGR_R_EINVAL	invalid argument
  * @retval	PKGMGR_R_ECOMM	communication error
 */
-int pkgmgr_client_deactivate_app(pkgmgr_client *pc, const char *appid, pkgmgr_app_handler app_event_cb);
-int pkgmgr_client_usr_deactivate_app(pkgmgr_client *pc, const char *appid, pkgmgr_app_handler app_event_cb, uid_t uid);
+int pkgmgr_client_deactivate_app(pkgmgr_client *pc, const char *appid, pkgmgr_app_handler app_event_cb, void *data);
+int pkgmgr_client_usr_deactivate_app(pkgmgr_client *pc, const char *appid, pkgmgr_app_handler app_event_cb, void *data, uid_t uid);
 
 /**
  * @brief	This API deactivates global app for user specified by uid.
@@ -505,12 +506,13 @@ int pkgmgr_client_usr_deactivate_app(pkgmgr_client *pc, const char *appid, pkgmg
  * @param[in]	appid	applicaiton id
  * @param[in]	app_event_cb	user callback
  * @param[in]	uid	user id
+ * @param[in]	data	user data
  * @return	request_id (>0) if success, error code(<0) if fail\n
  * @retval	PKGMGR_R_OK	success
  * @retval	PKGMGR_R_EINVAL	invalid argument
  * @retval	PKGMGR_R_ECOMM	communication error
 */
-int pkgmgr_client_deactivate_global_app_for_uid(pkgmgr_client *pc, const char *appid, pkgmgr_app_handler app_event_cb, uid_t uid);
+int pkgmgr_client_deactivate_global_app_for_uid(pkgmgr_client *pc, const char *appid, pkgmgr_app_handler app_event_cb, void *data, uid_t uid);
 
 /**
  * @brief	This API activates app.
@@ -521,13 +523,14 @@ int pkgmgr_client_deactivate_global_app_for_uid(pkgmgr_client *pc, const char *a
  * @param[in]	appid	applicaiton id
  * @param[in]	app_event_cb	user callback
  * @param[in]	uid	user id
+ * @param[in]	data	user data
  * @return	request_id (>0) if success, error code(<0) if fail\n
  * @retval	PKGMGR_R_OK	success
  * @retval	PKGMGR_R_EINVAL	invalid argument
  * @retval	PKGMGR_R_ECOMM	communication error
 */
-int pkgmgr_client_activate_app(pkgmgr_client *pc, const char *appid, pkgmgr_app_handler app_event_cb);
-int pkgmgr_client_usr_activate_app(pkgmgr_client *pc, const char *appid, pkgmgr_app_handler app_event_cb, uid_t uid);
+int pkgmgr_client_activate_app(pkgmgr_client *pc, const char *appid, pkgmgr_app_handler app_event_cb, void *data);
+int pkgmgr_client_usr_activate_app(pkgmgr_client *pc, const char *appid, pkgmgr_app_handler app_event_cb, void *data, uid_t uid);
 
 /**
  * @brief	This API activates global app for user specified by uid.
@@ -538,12 +541,13 @@ int pkgmgr_client_usr_activate_app(pkgmgr_client *pc, const char *appid, pkgmgr_
  * @param[in]	appid	applicaiton id
  * @param[in]	app_event_cb	user callback
  * @param[in]	uid	user id
+ * @param[in]	data	user data
  * @return	request_id (>0) if success, error code(<0) if fail\n
  * @retval	PKGMGR_R_OK	success
  * @retval	PKGMGR_R_EINVAL	invalid argument
  * @retval	PKGMGR_R_ECOMM	communication error
 */
-int pkgmgr_client_activate_global_app_for_uid(pkgmgr_client *pc, const char *appid, pkgmgr_app_handler app_event_cb, uid_t uid);
+int pkgmgr_client_activate_global_app_for_uid(pkgmgr_client *pc, const char *appid, pkgmgr_app_handler app_event_cb, void *data, uid_t uid);
 
 /**
  * @brief	This API deletes application's private data.

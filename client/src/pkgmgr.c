@@ -966,7 +966,7 @@ API int pkgmgr_client_deactivate_packages(pkgmgr_client *pc,
 }
 
 API int pkgmgr_client_usr_activate_app(pkgmgr_client *pc, const char *appid,
-		pkgmgr_app_handler app_event_cb, uid_t uid)
+		pkgmgr_app_handler app_event_cb, void *data, uid_t uid)
 {
 	GVariant *result;
 	int ret = PKGMGR_R_ECOMM;
@@ -996,7 +996,7 @@ API int pkgmgr_client_usr_activate_app(pkgmgr_client *pc, const char *appid,
 		return ret;
 	}
 
-	cb_info = __create_app_event_cb_info(client, app_event_cb, NULL,
+	cb_info = __create_app_event_cb_info(client, app_event_cb, data,
 			req_key);
 	if (cb_info == NULL) {
 		g_variant_unref(result);
@@ -1014,14 +1014,14 @@ API int pkgmgr_client_usr_activate_app(pkgmgr_client *pc, const char *appid,
 }
 
 API int pkgmgr_client_activate_app(pkgmgr_client *pc, const char *appid,
-		pkgmgr_app_handler app_event_cb)
+		pkgmgr_app_handler app_event_cb, void *data)
 {
 	return pkgmgr_client_usr_activate_app(pc, appid, app_event_cb,
-			_getuid());
+			data, _getuid());
 }
 
 API int pkgmgr_client_activate_global_app_for_uid(pkgmgr_client *pc,
-		const char *appid, pkgmgr_app_handler app_event_cb, uid_t uid)
+		const char *appid, pkgmgr_app_handler app_event_cb, void *data, uid_t uid)
 {
 	GVariant *result;
 	int ret = PKGMGR_R_ECOMM;
@@ -1052,7 +1052,7 @@ API int pkgmgr_client_activate_global_app_for_uid(pkgmgr_client *pc,
 		return ret;
 	}
 
-	cb_info = __create_app_event_cb_info(client, app_event_cb, NULL,
+	cb_info = __create_app_event_cb_info(client, app_event_cb, data,
 			req_key);
 	if (cb_info == NULL) {
 		g_variant_unref(result);
@@ -1070,7 +1070,7 @@ API int pkgmgr_client_activate_global_app_for_uid(pkgmgr_client *pc,
 }
 
 API int pkgmgr_client_usr_deactivate_app(pkgmgr_client *pc, const char *appid,
-		pkgmgr_app_handler app_event_cb, uid_t uid)
+		pkgmgr_app_handler app_event_cb, void *data, uid_t uid)
 {
 	GVariant *result;
 	int ret = PKGMGR_R_ECOMM;
@@ -1100,7 +1100,7 @@ API int pkgmgr_client_usr_deactivate_app(pkgmgr_client *pc, const char *appid,
 		return ret;
 	}
 
-	cb_info = __create_app_event_cb_info(client, app_event_cb, NULL,
+	cb_info = __create_app_event_cb_info(client, app_event_cb, data,
 			req_key);
 	if (cb_info == NULL) {
 		g_variant_unref(result);
@@ -1118,14 +1118,14 @@ API int pkgmgr_client_usr_deactivate_app(pkgmgr_client *pc, const char *appid,
 }
 
 API int pkgmgr_client_deactivate_app(pkgmgr_client *pc, const char *appid,
-		pkgmgr_app_handler app_event_cb)
+		pkgmgr_app_handler app_event_cb, void *data)
 {
-	return pkgmgr_client_usr_deactivate_app(pc, appid, app_event_cb,
+	return pkgmgr_client_usr_deactivate_app(pc, appid, app_event_cb, data,
 			_getuid());
 }
 
 API int pkgmgr_client_deactivate_global_app_for_uid(pkgmgr_client *pc,
-		const char *appid, pkgmgr_app_handler app_event_cb, uid_t uid)
+		const char *appid, pkgmgr_app_handler app_event_cb, void *data, uid_t uid)
 {
 	GVariant *result;
 	int ret = PKGMGR_R_ECOMM;
@@ -1156,7 +1156,7 @@ API int pkgmgr_client_deactivate_global_app_for_uid(pkgmgr_client *pc,
 		return ret;
 	}
 
-	cb_info = __create_app_event_cb_info(client, app_event_cb, NULL,
+	cb_info = __create_app_event_cb_info(client, app_event_cb, data,
 			req_key);
 	if (cb_info == NULL) {
 		g_variant_unref(result);
