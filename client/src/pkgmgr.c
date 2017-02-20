@@ -1018,7 +1018,7 @@ API int pkgmgr_client_usr_activate_app(pkgmgr_client *pc, const char *appid,
 	}
 	client->cb_info_list = g_list_append(client->cb_info_list, cb_info);
 
-	return PKGMGR_R_OK;
+	return cb_info->req_id;
 }
 
 API int pkgmgr_client_activate_app(pkgmgr_client *pc, const char *appid,
@@ -1140,7 +1140,7 @@ API int pkgmgr_client_activate_global_app_for_uid(pkgmgr_client *pc,
 	}
 	client->cb_info_list = g_list_append(client->cb_info_list, cb_info);
 
-	return PKGMGR_R_OK;
+	return cb_info->req_id;
 }
 
 API int pkgmgr_client_usr_deactivate_app(pkgmgr_client *pc, const char *appid,
@@ -1188,7 +1188,7 @@ API int pkgmgr_client_usr_deactivate_app(pkgmgr_client *pc, const char *appid,
 	}
 	client->cb_info_list = g_list_append(client->cb_info_list, cb_info);
 
-	return PKGMGR_R_OK;
+	return cb_info->req_id;
 }
 
 API int pkgmgr_client_deactivate_app(pkgmgr_client *pc, const char *appid,
@@ -1311,7 +1311,7 @@ API int pkgmgr_client_deactivate_global_app_for_uid(pkgmgr_client *pc,
 	}
 	client->cb_info_list = g_list_append(client->cb_info_list, cb_info);
 
-	return PKGMGR_R_OK;
+	return cb_info->req_id;
 }
 
 API int pkgmgr_client_usr_clear_user_data(pkgmgr_client *pc,
