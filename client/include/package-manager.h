@@ -498,6 +498,42 @@ int pkgmgr_client_deactivate_app(pkgmgr_client *pc, const char *appid, pkgmgr_ap
 int pkgmgr_client_usr_deactivate_app(pkgmgr_client *pc, const char *appid, pkgmgr_app_handler app_event_cb, void *data, uid_t uid);
 
 /**
+ * @brief	This API activates multiple apps.
+ *
+ * This API is for package-manager client application.\n
+ *
+ * @param[in]	pc	pkgmgr_client
+ * @param[in]	appids	array of application ids
+ * @param[in]	n_apps	size of array
+ * @param[in]	app_event_cb	user callback
+ * @param[in]	data	user data
+ * @return	request_id (>0) if success, error code(<0) if fail\n
+ * @retval	PKGMGR_R_OK	success
+ * @retval	PKGMGR_R_EINVAL	invalid argument
+ * @retval	PKGMGR_R_ECOMM	communication error
+*/
+int pkgmgr_client_activate_apps(pkgmgr_client *pc, const char **appids, int n_apps, pkgmgr_app_handler app_event_cb, void *data);
+int pkgmgr_client_usr_activate_apps(pkgmgr_client *pc, const char **appids, int n_apps, pkgmgr_app_handler app_event_cb, void *data, uid_t uid);
+
+/**
+ * @brief	This API deactivates multiple apps.
+ *
+ * This API is for package-manager client application.\n
+ *
+ * @param[in]	pc	pkgmgr_client
+ * @param[in]	appids	array of application ids
+ * @param[in]	n_apps	size of array
+ * @param[in]	app_event_cb	user callback
+ * @param[in]	data	user data
+ * @return	request_id (>0) if success, error code(<0) if fail\n
+ * @retval	PKGMGR_R_OK	success
+ * @retval	PKGMGR_R_EINVAL	invalid argument
+ * @retval	PKGMGR_R_ECOMM	communication error
+*/
+int pkgmgr_client_deactivate_apps(pkgmgr_client *pc, const char **appids, int n_apps, pkgmgr_app_handler app_event_cb, void *data);
+int pkgmgr_client_usr_deactivate_apps(pkgmgr_client *pc, const char **appids, int n_apps, pkgmgr_app_handler app_event_cb, void *data, uid_t uid);
+
+/**
  * @brief	This API deactivates global app for user specified by uid.
  *
  * This API is for package-manager client application.\n

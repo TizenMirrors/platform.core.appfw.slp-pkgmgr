@@ -1020,6 +1020,72 @@ API int pkgmgr_client_activate_app(pkgmgr_client *pc, const char *appid,
 			data, _getuid());
 }
 
+API int pkgmgr_client_usr_activate_apps(pkgmgr_client *pc, const char **appids,
+		int n_apps, pkgmgr_app_handler app_event_cb, void *data, uid_t uid)
+{
+	GVariant *result;
+	GVariantBuilder *builder;
+	int ret = PKGMGR_R_ECOMM;
+	char *req_key = NULL;
+	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
+	struct cb_info *cb_info;
+	int i;
+
+	if (pc == NULL || appids == NULL || n_apps < 1) {
+		ERR("invalid parameter");
+		return PKGMGR_R_EINVAL;
+	}
+
+	if (client->pc_type != PC_REQUEST) {
+		ERR("client type is not PC_REQUEST");
+		return PKGMGR_R_EINVAL;
+	}
+
+	builder = g_variant_builder_new(G_VARIANT_TYPE("as"));
+	for (i = 0; i < n_apps; i++)
+		g_variant_builder_add(builder, "s", appids[i]);
+
+	ret = pkgmgr_client_connection_send_request(client, "enable_apps",
+		g_variant_new("(uas)", uid, builder), &result);
+	g_variant_builder_unref(builder);
+	if (ret != PKGMGR_R_OK) {
+		ERR("request failed: %d", ret);
+		return ret;
+	}
+
+	g_variant_get(result, "(i&s)", &ret, &req_key);
+	if (req_key == NULL) {
+		g_variant_unref(result);
+		return PKGMGR_R_ECOMM;
+	}
+	if (ret != PKGMGR_R_OK) {
+		g_variant_unref(result);
+		return ret;
+	}
+
+	cb_info = __create_app_event_cb_info(client, app_event_cb, data, req_key);
+	if (cb_info == NULL) {
+		g_variant_unref(result);
+		return PKGMGR_R_ERROR;
+	}
+	g_variant_unref(result);
+	ret = pkgmgr_client_connection_set_callback(client, cb_info);
+	if (ret != PKGMGR_R_OK) {
+		__free_cb_info(cb_info);
+		return ret;
+	}
+	client->cb_info_list = g_list_append(client->cb_info_list, cb_info);
+
+	return cb_info->req_id;
+}
+
+API int pkgmgr_client_activate_apps(pkgmgr_client *pc, const char **appids,
+		int n_apps, pkgmgr_app_handler app_event_cb, void *data)
+{
+	return pkgmgr_client_usr_activate_apps(pc, appids, n_apps,
+			app_event_cb, data, _getuid());
+}
+
 API int pkgmgr_client_activate_global_app_for_uid(pkgmgr_client *pc,
 		const char *appid, pkgmgr_app_handler app_event_cb, void *data, uid_t uid)
 {
@@ -1122,6 +1188,73 @@ API int pkgmgr_client_deactivate_app(pkgmgr_client *pc, const char *appid,
 {
 	return pkgmgr_client_usr_deactivate_app(pc, appid, app_event_cb, data,
 			_getuid());
+}
+
+API int pkgmgr_client_usr_deactivate_apps(pkgmgr_client *pc,
+		const char **appids, int n_apps,
+		pkgmgr_app_handler app_event_cb, void *data, uid_t uid)
+{
+	GVariant *result;
+	GVariantBuilder *builder;
+	int ret = PKGMGR_R_ECOMM;
+	char *req_key = NULL;
+	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
+	struct cb_info *cb_info;
+	int i;
+
+	if (pc == NULL || appids == NULL || n_apps < 1) {
+		ERR("invalid parameter");
+		return PKGMGR_R_EINVAL;
+	}
+
+	if (client->pc_type != PC_REQUEST) {
+		ERR("client type is not PC_REQUEST");
+		return PKGMGR_R_EINVAL;
+	}
+
+	builder = g_variant_builder_new(G_VARIANT_TYPE("as"));
+	for (i = 0; i < n_apps; i++)
+		g_variant_builder_add(builder, "s", appids[i]);
+
+	ret = pkgmgr_client_connection_send_request(client, "disable_apps",
+		g_variant_new("(uas)", uid, builder), &result);
+	g_variant_builder_unref(builder);
+	if (ret != PKGMGR_R_OK) {
+		ERR("request failed: %d", ret);
+		return ret;
+	}
+
+	g_variant_get(result, "(i&s)", &ret, &req_key);
+	if (req_key == NULL) {
+		g_variant_unref(result);
+		return PKGMGR_R_ECOMM;
+	}
+	if (ret != PKGMGR_R_OK) {
+		g_variant_unref(result);
+		return ret;
+	}
+
+	cb_info = __create_app_event_cb_info(client, app_event_cb, data, req_key);
+	if (cb_info == NULL) {
+		g_variant_unref(result);
+		return PKGMGR_R_ERROR;
+	}
+	g_variant_unref(result);
+	ret = pkgmgr_client_connection_set_callback(client, cb_info);
+	if (ret != PKGMGR_R_OK) {
+		__free_cb_info(cb_info);
+		return ret;
+	}
+	client->cb_info_list = g_list_append(client->cb_info_list, cb_info);
+
+	return cb_info->req_id;
+}
+
+API int pkgmgr_client_deactivate_apps(pkgmgr_client *pc, const char **appids,
+		int n_apps, pkgmgr_app_handler app_event_cb, void *data)
+{
+	return pkgmgr_client_usr_deactivate_apps(pc, appids, n_apps,
+			app_event_cb, data, _getuid());
 }
 
 API int pkgmgr_client_deactivate_global_app_for_uid(pkgmgr_client *pc,
