@@ -56,6 +56,11 @@ struct pkgmgr_client_t {
 	bool debug_mode;
 };
 
+struct manifest_and_type {
+	const char *manifest;
+	const char *type;
+};
+
 int pkgmgr_client_connection_connect(struct pkgmgr_client_t *pc);
 void pkgmgr_client_connection_disconnect(struct pkgmgr_client_t *pc);
 int pkgmgr_client_connection_set_callback(struct pkgmgr_client_t *pc,

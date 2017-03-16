@@ -29,6 +29,7 @@
 #include <fcntl.h>
 #include <sys/wait.h>
 #include <sys/time.h>
+#include <unzip.h>
 
 #include <glib.h>
 
@@ -345,33 +346,35 @@ API int pkgmgr_client_free(pkgmgr_client *pc)
 	return PKGMGR_R_OK;
 }
 
+struct manifest_and_type type_map[] = {
+		{ "res/wgt/config.xml", "wgt" },
+		{ "config.xml", "wgt" },
+		{ "tizen-manifest.xml", "tpk" },
+		{ NULL, NULL }
+};
+
 static char *__get_type_from_path(const char *pkg_path)
 {
-	int ret;
-	char mimetype[255] = { '\0', };
-	char extlist[256] = { '\0', };
-	char *pkg_type;
+	const char *type = NULL;
+	unzFile uf;
+	int i;
 
-	ret = _get_mime_from_file(pkg_path, mimetype, sizeof(mimetype));
-	if (ret) {
-		ERR("_get_mime_from_file() failed - error code[%d]\n", ret);
+	uf = unzOpen(pkg_path);
+	if (uf == NULL) {
+		ERR("failed to open zip file %s", pkg_path);
 		return NULL;
 	}
 
-	ret = _get_mime_extension(mimetype, extlist, sizeof(extlist));
-	if (ret) {
-		ERR("_get_mime_extension() failed - error code[%d]\n", ret);
-		return NULL;
+	for (i = 0; type_map[i].manifest != NULL; i++) {
+		if (unzLocateFile(uf, type_map[i].manifest, 0) == UNZ_OK) {
+			DBG("pkgtype of %s: [%s]", pkg_path, type_map[i].type);
+			type = type_map[i].type;
+			break;
+		}
 	}
+	unzClose(uf);
 
-	if (strlen(extlist) == 0)
-		return NULL;
-
-	if (strchr(extlist, ','))
-		extlist[strlen(extlist) - strlen(strchr(extlist, ','))] = '\0';
-
-	pkg_type = strchr(extlist, '.') + 1;
-	return strdup(pkg_type);
+	return strdup(type);
 }
 
 API int pkgmgr_client_set_tep_path(pkgmgr_client *pc, const char *tep_path,
