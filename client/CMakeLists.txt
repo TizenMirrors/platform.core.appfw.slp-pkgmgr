@@ -10,7 +10,8 @@ pkg_check_modules(CLIENT_DEPS REQUIRED
 		pkgmgr-info
 		iniparser
 		xdgmime
-		libtzplatform-config)
+		libtzplatform-config
+		minizip)
 FOREACH(CLIENT_FLAGS ${CLIENT_DEPS_CFLAGS})
 	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CLIENT_FLAGS}")
 ENDFOREACH(CLIENT_FLAGS)
