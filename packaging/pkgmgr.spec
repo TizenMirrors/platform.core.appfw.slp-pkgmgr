@@ -154,6 +154,7 @@ HOME="$saveHOME"
 
 %files client
 %manifest %{name}-client.manifest
+%license LICENSE
 %defattr(-,root,root,-)
 %dir %{_sysconfdir}/package-manager
 %config %{_sysconfdir}/package-manager/pkg_path.conf
@@ -168,6 +169,7 @@ HOME="$saveHOME"
 
 %files installer
 %manifest %{name}-installer.manifest
+%license LICENSE
 %defattr(-,root,root,-)
 %{_libdir}/libpkgmgr_installer.so.*
 %{_bindir}/pkgmgr-installer-signal-agent
