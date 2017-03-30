@@ -166,6 +166,18 @@ typedef struct {
 	long long ext_app_size;
 } pkg_size_info_t;
 
+typedef enum {
+	PM_UPDATEINFO_TYPE_NONE = 0,
+	PM_UPDATEINFO_TYPE_FORCE,
+	PM_UPDATEINFO_TYPE_OPTIONAL
+} pkgmgr_updateinfo_type;
+
+typedef struct {
+	char *pkgid;
+	char *version;
+	pkgmgr_updateinfo_type type;
+} pkg_update_info_t;
+
 typedef int (*pkgmgr_iter_fn)(const char *pkg_type, const char *pkgid,
 				const char *version, void *data);
 
@@ -397,6 +409,54 @@ int pkgmgr_client_move(pkgmgr_client *pc, const char *pkg_type,
 int pkgmgr_client_usr_move(pkgmgr_client *pc, const char *pkg_type,
 				const char *pkgid, pkgmgr_move_type move_type,
 				pkgmgr_handler event_cb, void *data, uid_t uid);
+
+/**
+ * @brief	This API registers the update information of given packages
+ *
+ * This API is for package-manager client application.\n
+ *
+ * @param[in]	pc	pkgmgr_client
+ * @param[in]	update_info	update information
+ * @param[in]	uid	the addressee user id of the instruction
+ * @retval	PKGMGR_R_OK	success
+ * @retval	PKGMGR_R_EINVAL	invalid argument
+ * @retval	PKGMGR_R_ERROR	general error
+*/
+int pkgmgr_client_register_pkg_update_info(pkgmgr_client *pc,
+				pkg_update_info_t *update_info);
+int pkgmgr_client_usr_register_pkg_update_info(pkgmgr_client *pc,
+				pkg_update_info_t *update_info, uid_t uid);
+
+/**
+ * @brief	This API unregisters update information of certain package.
+ *
+ * This API is for package-manager client application.\n
+ *
+ * @param[in]	pc	pkgmgr_client
+ * @param[in]	pkgid	package id
+ * @param[in]	uid	the addressee user id of the instruction
+ * @retval	PKGMGR_R_OK	success
+ * @retval	PKGMGR_R_EINVAL	invalid argument
+ * @retval	PKGMGR_R_ERROR	general error
+*/
+int pkgmgr_client_unregister_pkg_update_info(pkgmgr_client *pc, const char *pkgid);
+int pkgmgr_client_usr_unregister_pkg_update_info(pkgmgr_client *pc,
+				const char *pkgid, uid_t uid);
+
+/**
+ * @brief	This API unregister update information of all packages.
+ *
+ * This API is for package-manager client application.\n
+ *
+ * @param[in]	pc	pkgmgr_client
+ * @param[in]	uid	the addressee user id of the instruction
+ * @retval	PKGMGR_R_OK	success
+ * @retval	PKGMGR_R_EINVAL	invalid argument
+ * @retval	PKGMGR_R_ERROR	general error
+*/
+int pkgmgr_client_unregister_all_pkg_update_info(pkgmgr_client *pc);
+int pkgmgr_client_usr_unregister_all_pkg_update_info(pkgmgr_client *pc,
+				uid_t uid);
 
 /**
  * @brief	This API activates package.
