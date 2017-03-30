@@ -760,6 +760,129 @@ API int pkgmgr_client_usr_move(pkgmgr_client *pc, const char *pkg_type,
 	return cb_info->req_id;
 }
 
+API int pkgmgr_client_usr_register_pkg_update_info(pkgmgr_client *pc,
+		pkg_update_info_t *update_info, uid_t uid)
+{
+	int ret;
+	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
+	GVariant *result;
+
+	if (pc == NULL || update_info == NULL || update_info->pkgid == NULL) {
+		ERR("invalid parameter");
+		return PKGMGR_R_EINVAL;
+	}
+
+	if (client->pc_type != PC_REQUEST) {
+		ERR("client->pc_type is not PC_REQUEST");
+		return PKGMGR_R_EINVAL;
+	}
+
+	ret = pkgmgr_client_connection_send_request(client, "register_pkg_update_info",
+			g_variant_new("(ussi)", uid, update_info->pkgid, update_info->version,
+			update_info->type), &result);
+	if (ret != PKGMGR_R_OK) {
+		ERR("request failed: %d", ret);
+		return ret;
+	}
+
+	g_variant_get(result, "(i)", &ret);
+	if (ret != PKGMGR_R_OK) {
+		g_variant_unref(result);
+		return ret;
+	}
+	g_variant_unref(result);
+
+	return PKGMGR_R_OK;
+}
+
+API int pkgmgr_client_register_pkg_update_info(pkgmgr_client *pc,
+		pkg_update_info_t *update_info)
+{
+	return pkgmgr_client_usr_register_pkg_update_info(pc, update_info,
+			_getuid());
+}
+
+API int pkgmgr_client_usr_unregister_pkg_update_info(pkgmgr_client *pc,
+		const char *pkgid, uid_t uid)
+{
+	int ret;
+	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
+	GVariant *result;
+
+	if (pc == NULL || pkgid == NULL) {
+		ERR("invalid parameter");
+		return PKGMGR_R_EINVAL;
+	}
+
+	if (client->pc_type != PC_REQUEST) {
+		ERR("client->pc_type is not PC_REQUEST");
+		return PKGMGR_R_EINVAL;
+	}
+
+	ret = pkgmgr_client_connection_send_request(client,
+			"unregister_pkg_update_info",
+			g_variant_new("(us)", uid, pkgid), &result);
+	if (ret != PKGMGR_R_OK) {
+		ERR("request failed: %d", ret);
+		return ret;
+	}
+
+	g_variant_get(result, "(i)", &ret);
+	if (ret != PKGMGR_R_OK) {
+		g_variant_unref(result);
+		return ret;
+	}
+	g_variant_unref(result);
+
+	return PKGMGR_R_OK;
+}
+
+API int pkgmgr_client_unregister_pkg_update_info(pkgmgr_client *pc,
+		const char *pkgid)
+{
+	return pkgmgr_client_usr_unregister_pkg_update_info(pc, pkgid, _getuid());
+}
+
+API int pkgmgr_client_usr_unregister_all_pkg_update_info(pkgmgr_client *pc,
+		uid_t uid)
+{
+	int ret;
+	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
+	GVariant *result;
+
+	if (pc == NULL) {
+		ERR("invalid parameter");
+		return PKGMGR_R_EINVAL;
+	}
+
+	if (client->pc_type != PC_REQUEST) {
+		ERR("client->pc_type is not PC_REQUEST");
+		return PKGMGR_R_EINVAL;
+	}
+
+	ret = pkgmgr_client_connection_send_request(client,
+			"unregister_all_pkg_update_info",
+			g_variant_new("(u)", uid), &result);
+	if (ret != PKGMGR_R_OK) {
+		ERR("request failed: %d", ret);
+		return ret;
+	}
+
+	g_variant_get(result, "(i)", &ret);
+	if (ret != PKGMGR_R_OK) {
+		g_variant_unref(result);
+		return ret;
+	}
+	g_variant_unref(result);
+
+	return PKGMGR_R_OK;
+}
+
+API int pkgmgr_client_unregister_all_pkg_update_info(pkgmgr_client *pc)
+{
+	return pkgmgr_client_usr_unregister_all_pkg_update_info(pc, _getuid());
+}
+
 API int pkgmgr_client_usr_activate(pkgmgr_client *pc, const char *pkg_type,
 		const char *pkgid, uid_t uid)
 {
