@@ -1,5 +1,3 @@
-%bcond_with wayland
-
 Name:       pkgmgr
 Summary:    Packager Manager client library package
 Version:    0.5.1
