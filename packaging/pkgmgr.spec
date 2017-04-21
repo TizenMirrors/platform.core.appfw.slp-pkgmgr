@@ -1,6 +1,6 @@
 Name:       pkgmgr
 Summary:    Packager Manager client library package
-Version:    0.5.2
+Version:    0.6.0
 Release:    0
 Group:      Application Framework/Package Management
 License:    Apache-2.0
