@@ -113,6 +113,7 @@ struct pkgmgr_installer {
 };
 
 static uid_t g_target_uid;
+static pkgmgr_privilege_level g_privilege_level = PM_PRIVILEGE_UNKNOWN;
 
 static const char *__get_signal_name(pkgmgr_installer *pi, const char *key,
 		const char *pkg_type)
@@ -878,9 +879,23 @@ API int pkgmgr_installer_delete_certinfo(const char *pkgid)
 	return ret;
 }
 
+API int pkgmgr_installer_set_privilege_level(pkgmgr_privilege_level level)
+{
+	g_privilege_level = level;
+
+	return 0;
+}
+
 API int pkgmgr_installer_info_get_target_uid(uid_t *uid)
 {
 	*uid = g_target_uid;
+
+	return 0;
+}
+
+API int pkgmgr_installer_info_get_privilege_level(pkgmgr_privilege_level *level)
+{
+	*level = g_privilege_level;
 
 	return 0;
 }

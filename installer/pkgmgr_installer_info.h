@@ -21,6 +21,8 @@
 #ifndef __PKGMGR_INSTALLER_INFO_H__
 #define __PKGMGR_INSTALLER_INFO_H__
 
+#include "pkgmgr_installer_type.h"
+
 /**
  * @file	pkgmgr_installer_info.h
  * @brief	This file declares API for getting information of pkgmgr_installer
@@ -31,7 +33,7 @@ extern "C" {
 #endif
 
 /**
- * @brief	Get target_uid for pkg to be installed path
+ * @brief	Get target_uid of package which is being processed by installer
  * @pre		None
  * @post	None
  * @param[out]	uid	user id
@@ -49,6 +51,30 @@ extern "C" {
  * @endcode
  */
 int pkgmgr_installer_info_get_target_uid(uid_t *uid);
+
+/**
+ * @brief	Get privilege_level of package which is being processed by installer
+ * @pre		None
+ * @post	None
+ * @param[out]	pkgmgr_privilege_level	level
+ * @return	0 if success, else retrun < 0
+ * @remark	In case of uninstallation, the level can be PM_PRIVILEGE_UNKNOWN.
+ *		Because, the installer don't have the privilege level in that case.
+ * @code
+	#include <pkgmgr_installer_info.h>
+	int main()
+	{
+		pkgmgr_privilege_level level;
+		if (pkgmgr_installer_info_get_privilege_level(&level) < 0) {
+			printf("failed to get privilege level\n");
+		}
+		if (level == PM_PRIVILEGE_PLATFORM)) {
+			printf("platform level privilege");
+		}
+	}
+ * @endcode
+ */
+int pkgmgr_installer_info_get_privilege_level(pkgmgr_privilege_level *level);
 
 #ifdef __cplusplus
 }
