@@ -141,6 +141,21 @@ HOME="$saveHOME"
 
 %postun -n pkgmgr-installer -p /sbin/ldconfig
 
+%posttrans
+if [ ! -f %{TZ_SYS_DB}/.pkgmgr_parser.db ]; then
+  pkg_initdb --ro
+  install_preload_pkg
+  if [ -f /tmp/.preload_install_error ]; then
+    if [ ! -d /tmp/.postscript/error ]; then
+      mkdir -p /tmp/.postscript/error
+    fi
+    echo "preload install failed" > /tmp/.postscript/error/%{name}_error
+  else
+    pkgcmd -l
+  fi
+  ${_sysconfdir}/package-manager/pkgmgr-label-initial-image.sh
+fi
+rm -rf %{_sysconfdir}/package-manager/pkgmgr-label-initial-image.sh
 
 %files
 %manifest %{name}.manifest
