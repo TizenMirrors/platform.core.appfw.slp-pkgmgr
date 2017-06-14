@@ -22,7 +22,6 @@
  * since 3.0
  */
 #define PKGMGR_INSTALLER_ERRCODE_UNDEFINED_ERROR        (-999)
-#define PKGMGR_INSTALLER_ERRCODE_RECOVERY_DONE           (-27)  /* Recovery process done */
 #define PKGMGR_INSTALLER_ERRCODE_GLOBALSYMLINK_ERROR     (-26)  /* Global symlink error */
 #define PKGMGR_INSTALLER_ERRCODE_GRANT_PERMISSION_ERROR  (-25)  /* Grant permission error */
 #define PKGMGR_INSTALLER_ERRCODE_IMAGE_ERROR             (-24)  /* Image error */
@@ -51,7 +50,6 @@
 #define PKGMGR_INSTALLER_ERRCODE_ERROR                    (-1)  /* General error */
 #define PKGMGR_INSTALLER_ERRCODE_OK                        (0)  /* Success */
 
-#define PKGMGR_INSTALLER_ERRCODE_RECOVERY_DONE_STR           "Recovery process done"
 #define PKGMGR_INSTALLER_ERRCODE_GLOBALSYMLINK_ERROR_STR     "Global symlink error"
 #define PKGMGR_INSTALLER_ERRCODE_GRANT_PERMISSION_ERROR_STR  "Grant permission error"
 #define PKGMGR_INSTALLER_ERRCODE_IMAGE_ERROR_STR             "Image error"
