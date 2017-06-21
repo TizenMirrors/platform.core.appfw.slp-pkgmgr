@@ -102,7 +102,7 @@ extern "C" {
 /**
  * @brief listening status type in pkgmgr.
  */
-#define PKGMGR_CLIENT_STATUS_ALL				0x03FF
+#define PKGMGR_CLIENT_STATUS_ALL				0x0FFF
 #define PKGMGR_CLIENT_STATUS_INSTALL				0x0001
 #define PKGMGR_CLIENT_STATUS_UNINSTALL				0x0002
 #define PKGMGR_CLIENT_STATUS_UPGRADE				0x0004
