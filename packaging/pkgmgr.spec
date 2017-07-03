@@ -155,7 +155,7 @@ if [ ! -f %{TZ_SYS_DB}/.pkgmgr_parser.db ]; then
     fi
     echo "preload install failed" > /tmp/.postscript/error/%{name}_error
   else
-    pkgcmd -l
+    pkgcmd -l --global 1>&2
   fi
   %{_sysconfdir}/package-manager/pkgmgr-label-initial-image.sh
 fi
