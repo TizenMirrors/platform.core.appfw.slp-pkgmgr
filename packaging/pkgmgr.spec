@@ -15,10 +15,6 @@ Source1007: %{name}.conf
 Source1008: %{name}-installer-signal-agent.service
 Source1009: %{name}-installer-signal-agent.socket
 Requires(post): /usr/sbin/useradd
-Requires(posttrans): /usr/bin/pkg_initdb
-Requires(posttrans): /usr/bin/install_preload_pkg
-Requires(posttrans): /usr/bin/pkgcmd
-Requires(posttrans): /etc/package-manager/pkgmgr-label-initial-image.sh
 
 BuildRequires:  cmake
 BuildRequires:  unzip
