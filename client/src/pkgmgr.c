@@ -2321,6 +2321,7 @@ API int pkgmgr_client_free_pkginfo(pkgmgr_info *info)
 		return PKGMGR_R_EINVAL;
 	}
 
+	g_list_free_full(pkg_info->privilege_list, free);
 	free(pkg_info->icon_buf);
 	free(pkg_info);
 
