@@ -769,6 +769,41 @@ int main(int argc, char **argv)
 int pkgmgr_installer_get_debug_mode(pkgmgr_installer *pi);
 
 /**
+	@brief		Get skip_check_reference value
+	@pre		pkgmgr_installer_receive_request() must be called.
+	@post		None
+	@see		pkgmgr_installer_receive_request
+	@param[in]	pi	pkgmgr_installer object
+	@return		Operation result
+	@retval		0 if a request does not skip checking reference
+	@retval		1 if a request skip checking reference
+	@remark		None
+	@code
+#include <pkgmgr_installer.h>
+int main(int argc, char **argv)
+{
+	pkgmgr_installer *pi;
+	int r = 0;
+	int check_reference = 0;
+
+	pi = pkgmgr_installer_new();
+	if(!pi) return -1;
+	if(pkgmgr_installer_receive_request(pi, argc, argv)) {
+		r = -1;
+		goto CLEANUP_RET;
+	}
+	check_reference = pkgmgr_installer_get_skip_check_reference(pi);
+
+	// Do something...
+
+	pkgmgr_installer_free(pi);
+	return r;
+}
+	@endcode
+*/
+int pkgmgr_installer_get_skip_check_reference(pkgmgr_installer *pi);
+
+/**
 	@brief		Send a app status signal
 	@pre		None
 	@post		None
