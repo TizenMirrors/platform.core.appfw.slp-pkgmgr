@@ -59,6 +59,7 @@
 #define OPTVAL_KEEP_RWDATA 1004
 #define OPTVAL_PARTIAL_RW 1005
 #define OPTVAL_MIGRATE_EXTIMG 1006
+#define OPTVAL_SKIP_CHECK_REFERENCE 1007
 
 /* Supported options */
 const char *short_opts = "k:l:i:d:c:m:t:o:r:p:s:b:e:M:y:u:w:D:A:qG";
@@ -87,6 +88,7 @@ const struct option long_opts[] = {
 	{ "keep-rwdata", 0, NULL, OPTVAL_KEEP_RWDATA }, /* for preload RW */
 	{ "partial-rw", 0, NULL, OPTVAL_PARTIAL_RW }, /* for preload RO */
 	{ "migrate-extimg", 1, NULL, OPTVAL_MIGRATE_EXTIMG },
+	{ "skip-check-reference", 0, NULL, OPTVAL_SKIP_CHECK_REFERENCE },
 	{ 0, 0, 0, 0 }	/* sentinel */
 };
 
@@ -109,6 +111,7 @@ struct pkgmgr_installer {
 	int keep_rwdata;
 	int partial_rw;
 	int debug_mode;
+	int skip_check_reference;
 	GDBusConnection *conn;
 };
 
@@ -421,6 +424,9 @@ pkgmgr_installer_receive_request(pkgmgr_installer *pi,
 			pi->pkgmgr_info = strndup(optarg, MAX_STRLEN);
 			DBG("legacy extimg migration requested");
 			break;
+		case OPTVAL_SKIP_CHECK_REFERENCE:
+			pi->skip_check_reference = 1;
+			break;
 		case 'k':	/* session id */
 			if (pi->session_id)
 				free(pi->session_id);
@@ -713,6 +719,12 @@ API int pkgmgr_installer_get_debug_mode(pkgmgr_installer *pi)
 {
 	CHK_PI_RET(PKGMGR_REQ_INVALID);
 	return pi->debug_mode;
+}
+
+API int pkgmgr_installer_get_skip_check_reference(pkgmgr_installer *pi)
+{
+	CHK_PI_RET(PKGMGR_REQ_INVALID);
+	return pi->skip_check_reference;
 }
 
 API int pkgmgr_installer_send_app_uninstall_signal(pkgmgr_installer *pi,
