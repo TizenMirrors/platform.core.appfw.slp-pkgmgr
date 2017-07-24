@@ -1087,6 +1087,22 @@ int pkgmgr_client_set_app_label(pkgmgr_client *pc, char *appid, char *label);
 int pkgmgr_client_usr_set_app_label(pkgmgr_client *pc, char *appid, char *label, uid_t uid);
 
 /**
+ * @brief	Change application's icon
+ *
+ * This API sets icon of application specified.\n
+ *
+ * @param[in]	pc		The pointer to pkgmgr_client instance
+ * @param[in]	appid		app id to be changed.
+ * @param[in]	icon_path	application's icon path to change.
+ * @return	0 if success, error code(<0) if fail\n
+ * @retval	PKGMGR_R_OK	success
+ * @retval	PKGMGR_R_EINVAL	invalid argument
+ * @retval	PKGMGR_R_ECOMM	communication error
+ */
+int pkgmgr_client_set_app_icon(pkgmgr_client *pc, char *appid, char *icon_path);
+int pkgmgr_client_usr_set_app_icon(pkgmgr_client *pc, char *appid, char *icon_path, uid_t uid);
+
+/**
  * @brief	Set debug mode
  *
  * This API sets debug mode value for request.\n

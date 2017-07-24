@@ -2359,6 +2359,42 @@ API int pkgmgr_client_set_app_label(pkgmgr_client *pc, char *appid, char *label)
 	return pkgmgr_client_usr_set_app_label(pc, appid, label, _getuid());
 }
 
+API int pkgmgr_client_usr_set_app_icon(pkgmgr_client *pc, char *appid,
+		char *icon_path, uid_t uid)
+{
+	GVariant *result;
+	int ret = -1;
+	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
+
+	if (pc == NULL || appid == NULL || icon_path == NULL) {
+		ERR("Invalid parameter");
+		return PKGMGR_R_EINVAL;
+	}
+
+	if (access(icon_path, F_OK) != 0) {
+		ERR("failed to access: %s", icon_path);
+		return PKGMGR_R_EINVAL;
+	}
+
+	ret = pkgmgr_client_connection_send_request(client,
+			"set_app_icon",
+			g_variant_new("(uss)", uid, appid, icon_path), &result);
+	if (ret != PKGMGR_R_OK) {
+		ERR("Request failed: %d", ret);
+		return ret;
+	}
+
+	g_variant_get(result, "(i)", &ret);
+	g_variant_unref(result);
+
+	return ret;
+}
+
+API int pkgmgr_client_set_app_icon(pkgmgr_client *pc, char *appid, char *icon_path)
+{
+	return pkgmgr_client_usr_set_app_icon(pc, appid, icon_path, _getuid());
+}
+
 API int pkgmgr_client_set_debug_mode(pkgmgr_client *pc, bool debug_mode)
 {
 	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
