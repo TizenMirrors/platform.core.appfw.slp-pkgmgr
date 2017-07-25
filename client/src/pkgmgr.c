@@ -719,7 +719,7 @@ API int pkgmgr_client_usr_move(pkgmgr_client *pc, const char *pkg_type,
 	}
 
 	if ((move_type < PM_MOVE_TO_INTERNAL) ||
-			(move_type > PM_MOVE_TO_SDCARD))
+			(move_type > PM_MOVE_TO_EXTENDED))
 		return PKGMGR_R_EINVAL;
 
 	if (client->pc_type != PC_REQUEST) {
@@ -1607,7 +1607,7 @@ API int pkgmgr_client_usr_request_service(
 	case PM_REQUEST_MOVE:
 		tryvm_if(pkgid == NULL, ret = PKGMGR_R_EINVAL, "pkgid is NULL\n");
 		tryvm_if(pc == NULL, ret = PKGMGR_R_EINVAL, "pc is NULL\n");
-		tryvm_if((service_mode < PM_MOVE_TO_INTERNAL) || (service_mode > PM_MOVE_TO_SDCARD), ret = PKGMGR_R_EINVAL, "service_mode is wrong\n");
+		tryvm_if((service_mode < PM_MOVE_TO_INTERNAL) || (service_mode > PM_MOVE_TO_EXTENDED), ret = PKGMGR_R_EINVAL, "service_mode is wrong\n");
 
 		ret = __move_pkg_process(pc, pkgid, pkg_type, uid, (pkgmgr_move_type)service_mode, event_cb, data);
 		break;

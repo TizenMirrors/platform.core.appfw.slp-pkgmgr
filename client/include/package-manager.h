@@ -209,6 +209,7 @@ typedef enum {
 typedef enum {
 	PM_MOVE_TO_INTERNAL = 0,
 	PM_MOVE_TO_SDCARD = 1,
+	PM_MOVE_TO_EXTENDED = 2,
 } pkgmgr_move_type;
 
 typedef enum {
@@ -394,7 +395,7 @@ int pkgmgr_client_usr_uninstall(pkgmgr_client *pc, const char *pkg_type,
  * @param[in]	pc	pkgmgr_client
  * @param[in]	pkg_type		package type
  * @param[in]	pkgid	application package id
- * @param[in]	move_type		PM_MOVE_TO_INTERNAL or PM_MOVE_TO_SDCARD
+ * @param[in]	move_type		move type
  * @param[in]	mode		installation mode  - PM_DEFAULT, PM_QUIET
  * @param[in]	event_cb	user callback
  * @param[in]	data	user data
