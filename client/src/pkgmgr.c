@@ -191,7 +191,7 @@ static int __get_size_process(pkgmgr_client *pc, const char *pkgid, uid_t uid,
 	}
 
 	if (size_info < 0) {
-		ERR("invalid size_info=(%d)", size_info);
+		ERR("invalid size_info=(%lld)", size_info);
 		ret = -1;
 	} else {
 		ret = (int)size_info;
