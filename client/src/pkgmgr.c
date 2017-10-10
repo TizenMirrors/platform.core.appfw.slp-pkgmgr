@@ -229,11 +229,12 @@ static int __check_app_process(pkgmgr_request_service_type service_type,
 
 	retvm_if(client->pc_type != PC_REQUEST, PKGMGR_R_EINVAL, "client->pc_type is not PC_REQUEST\n");
 
-	if (uid != GLOBAL_USER)
-		ret = pkgmgrinfo_pkginfo_get_usr_pkginfo(pkgid, uid, &handle);
-	else
-		ret = pkgmgrinfo_pkginfo_get_pkginfo(pkgid, &handle);
-	retvm_if(ret < 0, PKGMGR_R_ERROR, "pkgmgrinfo_pkginfo_get_pkginfo failed");
+	ret = pkgmgrinfo_pkginfo_get_usr_pkginfo(pkgid, uid, &handle);
+	if (ret != PMINFO_R_OK) {
+		ERR("pkgmgrinfo_pkginfo_get_pkginfo failed");
+		pkgmgrinfo_pkginfo_destroy_pkginfo(handle);
+		return PKGMGR_R_ERROR;
+	}
 
 	if (service_type == PM_REQUEST_KILL_APP)
 		ret = pkgmgr_client_connection_send_request(client, "kill",
@@ -314,8 +315,10 @@ API pkgmgr_client *pkgmgr_client_new(pkgmgr_client_type pc_type)
 	client->pc_type = pc_type;
 	client->status_type = PKGMGR_CLIENT_STATUS_ALL;
 
-	if (pkgmgr_client_connection_connect(client))
+	if (pkgmgr_client_connection_connect(client) != PKGMGR_R_OK) {
+		free(client);
 		return NULL;
+	}
 
 	return (pkgmgr_client *)client;
 }
@@ -366,7 +369,7 @@ static char *__get_type_from_path(const char *pkg_path)
 	}
 	unzClose(uf);
 
-	return strdup(type);
+	return type ? strdup(type) : NULL;
 }
 
 API int pkgmgr_client_set_tep_path(pkgmgr_client *pc, const char *tep_path,
