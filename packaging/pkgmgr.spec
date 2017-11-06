@@ -15,6 +15,7 @@ Source1007: %{name}.conf
 Source1008: %{name}-installer-signal-agent.service
 Source1009: %{name}-installer-signal-agent.socket
 Requires(post): /usr/sbin/useradd
+Requires(post): capi-system-info
 
 BuildRequires:  cmake
 BuildRequires:  unzip
