@@ -116,6 +116,7 @@ struct pkgmgr_installer {
 };
 
 static uid_t g_target_uid;
+static int g_debug_mode;
 static pkgmgr_privilege_level g_privilege_level = PM_PRIVILEGE_UNKNOWN;
 
 static const char *__get_signal_name(pkgmgr_installer *pi, const char *key,
@@ -381,6 +382,7 @@ pkgmgr_installer_receive_request(pkgmgr_installer *pi,
 
 	pi->target_uid = getuid();
 	g_target_uid = pi->target_uid;
+	g_debug_mode = 0;
 	while (1) {
 		c = getopt_long(argc, argv, short_opts, long_opts, &opt_idx);
 		/* printf("c=%d %c\n", c, c); //debug */
@@ -593,6 +595,7 @@ pkgmgr_installer_receive_request(pkgmgr_installer *pi,
 
 		case 'G': /* debug mode */
 			pi->debug_mode = 1;
+			g_debug_mode = 1;
 			break;
 
 			/* Otherwise */
@@ -909,5 +912,11 @@ API int pkgmgr_installer_info_get_privilege_level(pkgmgr_privilege_level *level)
 {
 	*level = g_privilege_level;
 
+	return 0;
+}
+
+API int pkgmgr_installer_info_get_debug_mode(int *debug_mode)
+{
+	*debug_mode = g_debug_mode;
 	return 0;
 }

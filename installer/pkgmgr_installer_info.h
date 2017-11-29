@@ -76,6 +76,28 @@ int pkgmgr_installer_info_get_target_uid(uid_t *uid);
  */
 int pkgmgr_installer_info_get_privilege_level(pkgmgr_privilege_level *level);
 
+/**
+ * @brief	Get debug mode flag
+ * @pre		None
+ * @post	None
+ * @param[out]	int	debug_mode
+ * @return	0 if success, else retrun < 0
+ * @code
+	#include <pkgmgr_installer_info.h>
+	int main()
+	{
+		int debug_mode;
+		if (pkgmgr_installer_info_get_debug_mode(&debug_mode) < 0) {
+			printf("failed to get debug mode\n");
+		}
+		if (debug_mode)) {
+			printf("debug mode is enabled");
+		}
+	}
+ * @endcode
+ */
+int pkgmgr_installer_info_get_debug_mode(int *debug_mode);
+
 #ifdef __cplusplus
 }
 #endif
