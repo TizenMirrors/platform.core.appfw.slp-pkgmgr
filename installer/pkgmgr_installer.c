@@ -77,7 +77,7 @@ const struct option long_opts[] = {
 	{ "tep-path", 1, NULL, 'e' },
 	{ "tep-move", 1, NULL, 'M' },
 	{ "smack", 1, NULL, 's' },
-	{ "direct-manifest-install", 1, NULL, 'y' },
+	{ "manifest-direct-install", 1, NULL, 'y' },
 	{ "mount-install", 1, NULL, 'w' },
 	{ "recovery", 1, NULL, 'b' },
 	{ "debug-mode", 0, NULL, 'G' },
