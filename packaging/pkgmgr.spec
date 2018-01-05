@@ -106,7 +106,7 @@ install -m 0644 %{SOURCE1007} %{buildroot}%{_tmpfilesdir}/pkgmgr.conf
 mkdir -p %{buildroot}%{_unitdir_user}/sockets.target.wants
 install -m 0644 %{SOURCE1008} %{buildroot}%{_unitdir_user}/pkgmgr-installer-signal-agent.service
 install -m 0644 %{SOURCE1009} %{buildroot}%{_unitdir_user}/pkgmgr-installer-signal-agent.socket
-ln -sf ../alarm_session_agent.socket %{buildroot}%{_unitdir_user}/sockets.target.wants/pkgmgr-installer-signal-agent.socket
+ln -sf ../pkgmgr-installer-signal-agent.socket %{buildroot}%{_unitdir_user}/sockets.target.wants/pkgmgr-installer-signal-agent.socket
 
 mkdir -p %{buildroot}%{_sysconfdir}/package-manager/backend
 mkdir -p %{buildroot}%{_sysconfdir}/package-manager/backendlib
