@@ -236,12 +236,17 @@ static int __check_app_process(pkgmgr_request_service_type service_type,
 		return PKGMGR_R_ERROR;
 	}
 
-	if (service_type == PM_REQUEST_KILL_APP)
+	if (service_type == PM_REQUEST_KILL_APP) {
 		ret = pkgmgr_client_connection_send_request(client, "kill",
 				g_variant_new("(us)", uid, pkgid), &result);
-	else if (service_type == PM_REQUEST_CHECK_APP)
+	} else if (service_type == PM_REQUEST_CHECK_APP) {
 		ret = pkgmgr_client_connection_send_request(client, "check",
 				g_variant_new("(us)", uid, pkgid), &result);
+	} else {
+		ERR("unexpected service type: %d", service_type);
+		ret = PKGMGR_R_ERROR;
+	}
+
 	if (ret != PKGMGR_R_OK) {
 		ERR("request failed: %d", ret);
 		return ret;
