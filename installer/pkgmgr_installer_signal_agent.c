@@ -236,6 +236,12 @@ static gboolean __handle_signal(gint fd, GIOCondition cond, gpointer user_data)
 		return FALSE;
 	}
 
+	if (type_len == 0) {
+		LOGE("invalid type_len");
+		close(clifd);
+		return FALSE;
+	}
+
 	/* get signal name (including terminating null byte) */
 	type_name = malloc(type_len);
 	memcpy(type_name, buf, type_len);
