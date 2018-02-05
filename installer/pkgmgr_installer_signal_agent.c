@@ -82,7 +82,7 @@ static int __create_server_socket(const char *path)
 		return -1;
 	}
 
-	r = chmod(sa.sun_path, 0666);
+	r = chmod(sa.sun_path, 0660);
 	if (r == -1)
 		LOGW("chmod(%s) failed: %d", sa.sun_path, errno);
 
