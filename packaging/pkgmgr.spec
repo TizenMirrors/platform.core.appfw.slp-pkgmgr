@@ -20,7 +20,6 @@ Requires(post): capi-system-info
 BuildRequires:  cmake
 BuildRequires:  unzip
 BuildRequires:  gettext-tools
-BuildRequires:  pkgconfig(dbus-glib-1)
 BuildRequires:  pkgconfig(glib-2.0)
 BuildRequires:  pkgconfig(gio-2.0)
 BuildRequires:  pkgconfig(dlog)
