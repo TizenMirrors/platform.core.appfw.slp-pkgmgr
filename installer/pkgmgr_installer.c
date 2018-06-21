@@ -60,6 +60,7 @@
 #define OPTVAL_PARTIAL_RW 1005
 #define OPTVAL_MIGRATE_EXTIMG 1006
 #define OPTVAL_SKIP_CHECK_REFERENCE 1007
+#define OPTVAL_RECOVER_DB 1008
 
 /* Supported options */
 const char *short_opts = "k:l:i:d:c:m:t:o:r:p:s:b:e:M:y:u:w:D:A:qG";
@@ -89,6 +90,7 @@ const struct option long_opts[] = {
 	{ "partial-rw", 0, NULL, OPTVAL_PARTIAL_RW }, /* for preload RO */
 	{ "migrate-extimg", 1, NULL, OPTVAL_MIGRATE_EXTIMG },
 	{ "skip-check-reference", 0, NULL, OPTVAL_SKIP_CHECK_REFERENCE },
+	{ "recover-db", 1, NULL, OPTVAL_RECOVER_DB },
 	{ 0, 0, 0, 0 }	/* sentinel */
 };
 
@@ -428,6 +430,10 @@ pkgmgr_installer_receive_request(pkgmgr_installer *pi,
 			break;
 		case OPTVAL_SKIP_CHECK_REFERENCE:
 			pi->skip_check_reference = 1;
+			break;
+		case OPTVAL_RECOVER_DB:
+			pi->request_type = PKGMGR_REQ_RECOVER_DB;
+			pi->pkgmgr_info = strndup(optarg, MAX_STRLEN);
 			break;
 		case 'k':	/* session id */
 			if (pi->session_id)
