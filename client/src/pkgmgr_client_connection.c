@@ -264,7 +264,8 @@ int pkgmgr_client_connection_send_request(struct pkgmgr_client_t *pc,
 	g_variant_ref_sink(params);
 
 	do {
-		proxy = g_dbus_proxy_new_sync(pc->conn, G_DBUS_PROXY_FLAGS_NONE,
+		proxy = g_dbus_proxy_new_sync(pc->conn,
+				G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES,
 				NULL, PKGMGR_DBUS_SERVICE,
 				PKGMGR_DBUS_OBJECT_PATH,
 				PKGMGR_DBUS_INTERFACE, NULL, &error);
