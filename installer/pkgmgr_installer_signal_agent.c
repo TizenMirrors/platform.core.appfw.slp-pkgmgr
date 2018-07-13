@@ -225,6 +225,12 @@ static gboolean __handle_signal(gint fd, GIOCondition cond, gpointer user_data)
 	memcpy(&type_len, buf, sizeof(size_t));
 	memcpy(&data_len, buf + sizeof(size_t), sizeof(gsize));
 
+	if ((type_len + data_len) > BUFMAX) {
+		LOGE("received size is too large: %zu %zd", type_len, data_len);
+		close(clifd);
+		return FALSE;
+	}
+
 	r = recv(clifd, buf, type_len + data_len, 0);
 	if (r < 0) {
 		LOGE("recv failed: %d", errno);
