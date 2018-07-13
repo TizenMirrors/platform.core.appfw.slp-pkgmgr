@@ -1699,11 +1699,13 @@ API int pkgmgr_client_usr_clear_cache_dir(const char *pkgid, uid_t uid)
 			g_variant_new("(us)", uid, pkgid), &result);
 	if (ret != PKGMGR_R_OK) {
 		ERR("request failed: %d", ret);
+		pkgmgr_client_free(client);
 		return ret;
 	}
 
 	g_variant_get(result, "(i)", &ret);
 	g_variant_unref(result);
+	pkgmgr_client_free(client);
 
 	return ret;
 }
