@@ -50,6 +50,7 @@
 #define PKGMGR_INSTALLER_ERRCODE_ERROR                    (-1)  /* General error */
 #define PKGMGR_INSTALLER_ERRCODE_OK                        (0)  /* Success */
 
+#define PKGMGR_INSTALLER_ERRCODE_UNDEFINED_ERROR_STR         "Undefined error"
 #define PKGMGR_INSTALLER_ERRCODE_GLOBALSYMLINK_ERROR_STR     "Global symlink error"
 #define PKGMGR_INSTALLER_ERRCODE_GRANT_PERMISSION_ERROR_STR  "Grant permission error"
 #define PKGMGR_INSTALLER_ERRCODE_IMAGE_ERROR_STR             "Image error"

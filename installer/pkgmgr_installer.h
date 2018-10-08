@@ -1021,6 +1021,16 @@ int pkgmgr_installer_delete_certinfo(const char *pkgid);
 */
 int pkgmgr_installer_set_privilege_level(pkgmgr_privilege_level level);
 
+/**
+ * @brief	This API converts error code to string
+ *
+ *              This API is for installer backend.\n
+ *
+ * @param[in]	error_code			pkgmgr installer error code
+ * @return	error string\n
+*/
+const char *pkgmgr_installer_error_to_string(int error_code);
+
 #ifdef __cplusplus
 }
 #endif
