@@ -459,10 +459,12 @@ pkgmgr_installer_receive_request(pkgmgr_installer *pi,
 				free(pi->pkgmgr_info);
 			pi->pkgmgr_info = strndup(optarg, MAX_STRLEN);
 			DBG("option is [i] pkgid[%s]", pi->pkgmgr_info);
-			if (pi->pkgmgr_info && strlen(pi->pkgmgr_info) == 0)
+			if (pi->pkgmgr_info && strlen(pi->pkgmgr_info) == 0) {
 				free(pi->pkgmgr_info);
-			else
+				pi->pkgmgr_info = NULL;
+			} else {
 				mode = 'i';
+			}
 			break;
 
 		case 'e':	/* install */
