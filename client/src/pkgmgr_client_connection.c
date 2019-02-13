@@ -31,6 +31,7 @@
 
 #define CONNECTION_RETRY_MAX 5
 #define CONNECTION_WAIT_USEC (1000000 / 2) /* 0.5 sec */
+#define CONNECTION_TIMEOUT_MSEC 5000 /* 5 sec */
 #define REGULAR_USER 5000
 
 static int _is_system_user(void)
@@ -280,7 +281,8 @@ int pkgmgr_client_connection_send_request(struct pkgmgr_client_t *pc,
 		}
 
 		r = g_dbus_proxy_call_sync(proxy, method, params,
-				G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+				G_DBUS_CALL_FLAGS_NONE,
+				CONNECTION_TIMEOUT_MSEC, NULL, &error);
 		g_object_unref(proxy);
 		if (error && error->code == G_DBUS_ERROR_ACCESS_DENIED) {
 			ERR("failed to send request, privilege denied[%s]",
