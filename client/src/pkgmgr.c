@@ -151,10 +151,19 @@ static struct cb_info *__create_size_info_cb_info(
 	return cb_info;
 }
 
-static void __free_cb_info(struct cb_info *cb_info)
+static gboolean __free_cb_info_at_main_thread(gpointer user_data)
 {
+	struct cb_info *cb_info = (struct cb_info *)user_data;
+
 	free(cb_info->req_key);
 	free(cb_info);
+
+	return G_SOURCE_REMOVE;
+}
+
+static void __free_cb_info(struct cb_info *cb_info)
+{
+	g_idle_add(__free_cb_info_at_main_thread, cb_info);
 }
 
 static int __get_size_process(pkgmgr_client *pc, const char *pkgid, uid_t uid,
