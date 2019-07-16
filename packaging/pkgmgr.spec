@@ -131,6 +131,15 @@ HOME="%{_sysconfdir}/skel"
 . "%{_sysconfdir}/tizen-platform.conf"
 
 chown %TZ_SYS_GLOBALAPP_USER:root $TZ_USER_APP
+
+# add .shared and .shared_tmp at skel
+mkdir -p $TZ_USER_APP/.shared
+mkdir -p $TZ_USER_APP/.shared_tmp
+chsmack -a User::Home $TZ_USER_APP/.shared
+chsmack -a User::Home $TZ_USER_APP/.shared_tmp
+chmod 755 $TZ_USER_APP/.shared
+chmod 755 $TZ_USER_APP/.shared_tmp
+
 HOME="$saveHOME"
 
 %post -n pkgmgr-client -p /sbin/ldconfig
