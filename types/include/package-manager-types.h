@@ -84,6 +84,7 @@ extern "C" {
 #define PKG_URL_STRING_LEN_MAX 1024
 #define PKG_LABEL_STRING_LEN_MAX 128
 #define PKG_PATH_STRING_LEN_MAX 512
+#define PKG_DEP_TYPE_STRING_LEN_MAX 128
 
 /**
  *@brief application's structure retrieved by package-manager
@@ -95,6 +96,12 @@ typedef struct _package_manager_pkg_info_t {
 	char version[PKG_VERSION_STRING_LEN_MAX];
 	struct _package_manager_pkg_info_t *next;
 } package_manager_pkg_info_t;
+
+typedef struct _package_manager_pkg_dependency_info_t {
+	char pkgid[PKG_NAME_STRING_LEN_MAX];
+	char type[PKG_DEP_TYPE_STRING_LEN_MAX];
+	char required_version[PKG_VERSION_STRING_LEN_MAX];
+} pkg_dependency_info_t;
 
 typedef struct _package_manager_pkg_detail_info_t {
 	char pkg_type[PKG_TYPE_STRING_LEN_MAX];
@@ -115,6 +122,7 @@ typedef struct _package_manager_pkg_detail_info_t {
 	char *icon_buf;
 	int icon_size;
 	GList *privilege_list;
+	GList *dependency_list;
 } package_manager_pkg_detail_info_t;
 
 /** @} */
