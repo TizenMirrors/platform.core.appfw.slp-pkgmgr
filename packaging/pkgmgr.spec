@@ -14,8 +14,6 @@ Source1006: %{name}-types-devel.manifest
 Source1007: %{name}.conf
 Source1008: %{name}-installer-signal-agent.service
 Source1009: %{name}-installer-signal-agent.socket
-Source1010: %{name}-installer-signal-agent@.service
-Source1011: %{name}-installer-signal-agent@.socket
 Requires(post): /usr/sbin/useradd
 Requires(post): capi-system-info
 
@@ -109,11 +107,6 @@ install -m 0644 %{SOURCE1008} %{buildroot}%{_unitdir_user}/pkgmgr-installer-sign
 install -m 0644 %{SOURCE1009} %{buildroot}%{_unitdir_user}/pkgmgr-installer-signal-agent.socket
 ln -sf ../pkgmgr-installer-signal-agent.socket %{buildroot}%{_unitdir_user}/sockets.target.wants/pkgmgr-installer-signal-agent.socket
 
-mkdir -p %{buildroot}%{_unitdir}/user-sockets@.target.wants
-install -m 0644 %{SOURCE1010} %{buildroot}%{_unitdir}/pkgmgr-installer-signal-agent@.service
-install -m 0644 %{SOURCE1011} %{buildroot}%{_unitdir}/pkgmgr-installer-signal-agent@.socket
-ln -sf ../pkgmgr-installer-signal-agent@.socket %{buildroot}%{_unitdir}/user-sockets@.target.wants/pkgmgr-installer-signal-agent@.socket
-
 mkdir -p %{buildroot}%{_sysconfdir}/package-manager/backend
 mkdir -p %{buildroot}%{_sysconfdir}/package-manager/backendlib
 mkdir -p %{buildroot}%{_sysconfdir}/opt/upgrade
@@ -196,9 +189,6 @@ rm -rf %{_sysconfdir}/package-manager/pkgmgr-label-initial-image.sh
 %{_unitdir_user}/pkgmgr-installer-signal-agent.service
 %{_unitdir_user}/pkgmgr-installer-signal-agent.socket
 %{_unitdir_user}/sockets.target.wants/pkgmgr-installer-signal-agent.socket
-%{_unitdir}/pkgmgr-installer-signal-agent@.service
-%{_unitdir}/pkgmgr-installer-signal-agent@.socket
-%{_unitdir}/user-sockets@.target.wants/pkgmgr-installer-signal-agent@.socket
 
 %files installer-devel
 %manifest %{name}-installer-devel.manifest
