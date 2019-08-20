@@ -119,6 +119,7 @@ struct pkgmgr_installer {
 	int skip_optimization;
 	GDBusConnection *conn;
 	GHashTable *pkg_list;
+	GList *pkgs;
 };
 
 typedef struct pkg_signal_info {
@@ -407,6 +408,15 @@ API int pkgmgr_installer_free(pkgmgr_installer *pi)
 	return 0;
 }
 
+static void __parse_multiple_pkgs(pkgmgr_installer *pi, int argc, char **argv)
+{
+	while ((optind <= argc) && (*argv[optind - 1] != '-')) {
+		pi->pkgs = g_list_append(pi->pkgs, strdup(argv[optind - 1]));
+		optind++;
+	}
+	optind--;
+}
+
 API int
 pkgmgr_installer_receive_request(pkgmgr_installer *pi,
 				 const int argc, char **argv)
@@ -425,6 +435,12 @@ pkgmgr_installer_receive_request(pkgmgr_installer *pi,
 	g_target_uid = pi->target_uid;
 	g_debug_mode = 0;
 	g_skip_optimization = 0;
+
+	if (pi->pkgs) {
+		g_list_free_full(pi->pkgs, free);
+		pi->pkgs = NULL;
+	}
+
 	while (1) {
 		c = getopt_long(argc, argv, short_opts, long_opts, &opt_idx);
 		/* printf("c=%d %c\n", c, c); //debug */
@@ -466,6 +482,7 @@ pkgmgr_installer_receive_request(pkgmgr_installer *pi,
 			if (pi->pkgmgr_info)
 				free(pi->pkgmgr_info);
 			pi->pkgmgr_info = strndup(optarg, MAX_STRLEN);
+			__parse_multiple_pkgs(pi, argc, argv);
 			DBG("legacy extimg migration requested");
 			break;
 		case OPTVAL_SKIP_CHECK_REFERENCE:
@@ -474,6 +491,7 @@ pkgmgr_installer_receive_request(pkgmgr_installer *pi,
 		case OPTVAL_RECOVER_DB:
 			pi->request_type = PKGMGR_REQ_RECOVER_DB;
 			pi->pkgmgr_info = strndup(optarg, MAX_STRLEN);
+			__parse_multiple_pkgs(pi, argc, argv);
 			break;
 		case 'k':	/* session id */
 			if (pi->session_id)
@@ -497,6 +515,7 @@ pkgmgr_installer_receive_request(pkgmgr_installer *pi,
 			if (pi->pkgmgr_info)
 				free(pi->pkgmgr_info);
 			pi->pkgmgr_info = strndup(optarg, MAX_STRLEN);
+			__parse_multiple_pkgs(pi, argc, argv);
 			DBG("option is [i] pkgid[%s]", pi->pkgmgr_info);
 			if (pi->pkgmgr_info && strlen(pi->pkgmgr_info) == 0) {
 				free(pi->pkgmgr_info);
@@ -532,6 +551,7 @@ pkgmgr_installer_receive_request(pkgmgr_installer *pi,
 			if (pi->pkgmgr_info)
 				free(pi->pkgmgr_info);
 			pi->pkgmgr_info = strndup(optarg, MAX_STRLEN);
+			__parse_multiple_pkgs(pi, argc, argv);
 			break;
 
 
@@ -545,6 +565,7 @@ pkgmgr_installer_receive_request(pkgmgr_installer *pi,
 			if (pi->pkgmgr_info)
 				free(pi->pkgmgr_info);
 			pi->pkgmgr_info = strndup(optarg, MAX_STRLEN);
+			__parse_multiple_pkgs(pi, argc, argv);
 			break;
 
 		case 'm':	/* move */
@@ -557,6 +578,7 @@ pkgmgr_installer_receive_request(pkgmgr_installer *pi,
 			if (pi->pkgmgr_info)
 				free(pi->pkgmgr_info);
 			pi->pkgmgr_info = strndup(optarg, MAX_STRLEN);
+			__parse_multiple_pkgs(pi, argc, argv);
 			break;
 
 		case 'r':	/* reinstall */
@@ -569,6 +591,7 @@ pkgmgr_installer_receive_request(pkgmgr_installer *pi,
 			if (pi->pkgmgr_info)
 				free(pi->pkgmgr_info);
 			pi->pkgmgr_info = strndup(optarg, MAX_STRLEN);
+			__parse_multiple_pkgs(pi, argc, argv);
 			break;
 
 		case 't': /* move type*/
@@ -592,6 +615,7 @@ pkgmgr_installer_receive_request(pkgmgr_installer *pi,
 			if (pi->pkgmgr_info)
 				free(pi->pkgmgr_info);
 			pi->pkgmgr_info = strndup(optarg, MAX_STRLEN);
+			__parse_multiple_pkgs(pi, argc, argv);
 			break;
 
 		case 'o': /* optional data*/
@@ -602,12 +626,14 @@ pkgmgr_installer_receive_request(pkgmgr_installer *pi,
 			mode = 'y';
 			pi->request_type = PKGMGR_REQ_MANIFEST_DIRECT_INSTALL;
 			pi->pkgmgr_info = strndup(optarg, MAX_STRLEN);
+			__parse_multiple_pkgs(pi, argc, argv);
 			break;
 
 		case 'w': /* pkgid for mount installation */
 			mode = 'w';
 			pi->request_type = PKGMGR_REQ_MOUNT_INSTALL;
 			pi->pkgmgr_info = strndup(optarg, MAX_STRLEN);
+			__parse_multiple_pkgs(pi, argc, argv);
 			break;
 
 		case 'b': /* recovery */
@@ -620,6 +646,7 @@ pkgmgr_installer_receive_request(pkgmgr_installer *pi,
 			if (pi->pkgmgr_info)
 				free(pi->pkgmgr_info);
 			pi->pkgmgr_info = strndup(optarg, MAX_STRLEN);
+			__parse_multiple_pkgs(pi, argc, argv);
 			break;
 
 		case 'D': /* disable pkg */
@@ -627,6 +654,7 @@ pkgmgr_installer_receive_request(pkgmgr_installer *pi,
 			if (pi->pkgmgr_info)
 				free(pi->pkgmgr_info);
 			pi->pkgmgr_info = strndup(optarg, MAX_STRLEN);
+			__parse_multiple_pkgs(pi, argc, argv);
 			break;
 
 		case 'A': /* enable pkg */
@@ -634,6 +662,7 @@ pkgmgr_installer_receive_request(pkgmgr_installer *pi,
 			if (pi->pkgmgr_info)
 				free(pi->pkgmgr_info);
 			pi->pkgmgr_info = strndup(optarg, MAX_STRLEN);
+			__parse_multiple_pkgs(pi, argc, argv);
 			break;
 
 		case 'u': /* uid */
@@ -686,6 +715,19 @@ API const char *pkgmgr_installer_get_request_info(pkgmgr_installer *pi)
 {
 	CHK_PI_RET(PKGMGR_REQ_INVALID);
 	return pi->pkgmgr_info;
+}
+
+API const char *pkgmgr_installer_get_request_info_at(pkgmgr_installer *pi,
+		int at)
+{
+	CHK_PI_RET(PKGMGR_REQ_INVALID);
+	return (const char *)g_list_nth_data(pi->pkgs, at);
+}
+
+API int pkgmgr_installer_get_request_info_count(pkgmgr_installer *pi)
+{
+	CHK_PI_RET(PKGMGR_REQ_INVALID);
+	return g_list_length(pi->pkgs);
 }
 
 API const char *pkgmgr_installer_get_tep_path(pkgmgr_installer *pi)

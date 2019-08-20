@@ -247,6 +247,74 @@ int main(int argc, char **argv)
 const char *pkgmgr_installer_get_request_info(pkgmgr_installer *pi);
 
 /**
+	@brief		Get request info at specific position
+	@pre		pkgmgr_installer_receive_request() must be called.
+	@post		None
+	@see		pkgmgr_installer_receive_request
+	@see		pkgmgr_installer_get_request_info_count
+	@param[in]	pi	pkgmgr_installer object
+	@return		Request info. When PKGMGR_REQ_INSTALL, this is a package file path to be installed. When PKGMGR_REQ_UNINSTALL, this is a package name to be uninstalled.
+	@retval		NULL	on function failure
+	@remark		Returned string must not be modified.
+	@code
+#include <pkgmgr_installer.h>
+int main(int argc, char **argv)
+{
+	pkgmgr_installer *pi;
+	int r = 0;
+	char *req_info = NULL;
+
+	pi = pkgmgr_installer_new();
+	if(!pi) return -1;
+	if(pkgmgr_installer_receive_request(pi, argc, argv)) {
+		r = -1;
+		goto CLEANUP_RET;
+	}
+	req_info = (char *) pkgmgr_installer_get_request_info_at(pi, 1);
+
+	// Do something...
+
+	pkgmgr_installer_free(pi);
+	return r;
+}
+	@endcode
+ */
+const char *pkgmgr_installer_get_request_info_at(pkgmgr_installer *pi,
+		int at);
+
+/**
+	@brief		Get the number of request info
+	@pre		pkgmgr_installer_receive_request() must be called.
+	@post		None
+	@see		pkgmgr_installer_receive_request
+	@param[in]	pi	pkgmgr_installer object
+	@return		The number of request info.
+	@code
+#include <pkgmgr_installer.h>
+int main(int argc, char **argv)
+{
+	pkgmgr_installer *pi;
+	int r = 0;
+	int n;
+
+	pi = pkgmgr_installer_new();
+	if(!pi) return -1;
+	if(pkgmgr_installer_receive_request(pi, argc, argv)) {
+		r = -1;
+		goto CLEANUP_RET;
+	}
+	n = pkgmgr_installer_get_request_info_count(pi);
+
+	// Do something...
+
+	pkgmgr_installer_free(pi);
+	return r;
+}
+	@endcode
+ */
+int pkgmgr_installer_get_request_info_count(pkgmgr_installer *pi);
+
+/**
 	@brief		Get TEP path
 	@pre		pkgmgr_installer_receive_request() must be called.
 	@post		None
