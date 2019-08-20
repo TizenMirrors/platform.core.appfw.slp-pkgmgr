@@ -1116,6 +1116,19 @@ int pkgmgr_client_usr_set_app_icon(pkgmgr_client *pc, char *appid, char *icon_pa
 int pkgmgr_client_set_debug_mode(pkgmgr_client *pc, bool debug_mode);
 
 /**
+ * @brief	Set skip optimization
+ *
+ * This API sets skip optimization value for request.\n
+ *
+ * @param[in]	pc	The pointer to pkgmgr_client instance
+ * @param[in]	skip_optimization	indicates the request is skip optimization or not
+ * @return	0 if success, error code(<0) if fail\n
+ * @retval	PKGMGR_R_OK	success
+ * @retval	PKGMGR_R_EINVAL	invalid argument
+ */
+int pkgmgr_client_set_skip_optimization(pkgmgr_client *pc, bool skip_optimization);
+
+/**
  * @brief	Migrate legacy external image which is generated under 3.0
  *
  * This API request the migration of external image.\n

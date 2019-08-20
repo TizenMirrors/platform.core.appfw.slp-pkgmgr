@@ -98,6 +98,28 @@ int pkgmgr_installer_info_get_privilege_level(pkgmgr_privilege_level *level);
  */
 int pkgmgr_installer_info_get_debug_mode(int *debug_mode);
 
+/**
+ * @brief	Get skip optimization flag
+ * @pre		None
+ * @post	None
+ * @param[out]	int	skip_optimization
+ * @return	0 if success, else retrun < 0
+ * @code
+	#include <pkgmgr_installer_info.h>
+	int main()
+	{
+		int skip_optimization;
+		if (pkgmgr_installer_info_get_skip_optimization(&skip_optimization) < 0) {
+			printf("failed to get skip optimization\n");
+		}
+		if (skip_optimization)) {
+			printf("skip optimization is enabled");
+		}
+	}
+ * @endcode
+ */
+int pkgmgr_installer_info_get_skip_optimization(int *skip_optimization);
+
 #ifdef __cplusplus
 }
 #endif

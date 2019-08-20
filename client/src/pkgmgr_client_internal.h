@@ -54,6 +54,7 @@ struct pkgmgr_client_t {
 	char *tep_path;
 	bool tep_move;
 	bool debug_mode;
+	bool skip_optimization;
 };
 
 struct manifest_and_type {

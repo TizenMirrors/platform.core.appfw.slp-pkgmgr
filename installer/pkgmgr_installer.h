@@ -733,6 +733,41 @@ int main(int argc, char **argv)
 int pkgmgr_installer_get_skip_check_reference(pkgmgr_installer *pi);
 
 /**
+	@brief		Get skip optimization value
+	@pre		pkgmgr_installer_receive_request() must be called.
+	@post		None
+	@see		pkgmgr_installer_receive_request
+	@param[in]	pi	pkgmgr_installer object
+	@return		Operation result
+	@retval		0 if a request is not debug mode
+	@retval		1 if a request is debug mode
+	@remark		None
+	@code
+#include <pkgmgr_installer.h>
+int main(int argc, char **argv)
+{
+	pkgmgr_installer *pi;
+	int r = 0;
+	int skip_optimization = 0;
+
+	pi = pkgmgr_installer_new();
+	if(!pi) return -1;
+	if(pkgmgr_installer_receive_request(pi, argc, argv)) {
+		r = -1;
+		goto CLEANUP_RET;
+	}
+	skip_optimization = pkgmgr_installer_get_skip_optimization(pi);
+
+	// Do something...
+
+	pkgmgr_installer_free(pi);
+	return r;
+}
+	@endcode
+*/
+int pkgmgr_installer_get_skip_optimization(pkgmgr_installer *pi);
+
+/**
 	@brief		Send a app status signal
 	@pre		None
 	@post		None

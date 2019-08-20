@@ -64,7 +64,7 @@
 #define OPTVAL_RECOVER_DB 1008
 
 /* Supported options */
-const char *short_opts = "k:l:i:d:c:m:t:o:r:p:s:b:e:M:y:u:w:D:A:qG";
+const char *short_opts = "k:l:i:d:c:m:t:o:r:p:s:b:e:M:y:u:w:D:A:qGS";
 const struct option long_opts[] = {
 	{ "session-id", 1, NULL, 'k' },
 	{ "license-path", 1, NULL, 'l' },
@@ -83,6 +83,7 @@ const struct option long_opts[] = {
 	{ "mount-install", 1, NULL, 'w' },
 	{ "recovery", 1, NULL, 'b' },
 	{ "debug-mode", 0, NULL, 'G' },
+	{ "skip-optimization", 0, NULL, 'S' },
 	{ "preload", 0, NULL, OPTVAL_PRELOAD }, /* for preload RO */
 	{ "force-remove", 0, NULL, OPTVAL_FORCE_REMOVAL }, /* for preload RO/RW */
 	{ "preload-rw", 0, NULL, OPTVAL_PRELOAD_RW }, /* for preload RW */
@@ -115,11 +116,13 @@ struct pkgmgr_installer {
 	int partial_rw;
 	int debug_mode;
 	int skip_check_reference;
+	int skip_optimization;
 	GDBusConnection *conn;
 };
 
 static uid_t g_target_uid;
 static int g_debug_mode;
+static int g_skip_optimization;
 static pkgmgr_privilege_level g_privilege_level = PM_PRIVILEGE_UNKNOWN;
 
 static const char *__get_signal_name(pkgmgr_installer *pi, const char *key,
@@ -386,6 +389,7 @@ pkgmgr_installer_receive_request(pkgmgr_installer *pi,
 	pi->target_uid = getuid();
 	g_target_uid = pi->target_uid;
 	g_debug_mode = 0;
+	g_skip_optimization = 0;
 	while (1) {
 		c = getopt_long(argc, argv, short_opts, long_opts, &opt_idx);
 		/* printf("c=%d %c\n", c, c); //debug */
@@ -607,6 +611,11 @@ pkgmgr_installer_receive_request(pkgmgr_installer *pi,
 			g_debug_mode = 1;
 			break;
 
+		case 'S': /* skip optimization */
+			pi->skip_optimization = 1;
+			g_skip_optimization = 1;
+			break;
+
 			/* Otherwise */
 		case '?':	/* Not an option */
 			break;
@@ -737,6 +746,12 @@ API int pkgmgr_installer_get_skip_check_reference(pkgmgr_installer *pi)
 {
 	CHK_PI_RET(PKGMGR_REQ_INVALID);
 	return pi->skip_check_reference;
+}
+
+API int pkgmgr_installer_get_skip_optimization(pkgmgr_installer *pi)
+{
+	CHK_PI_RET(PKGMGR_REQ_INVALID);
+	return pi->skip_optimization;
 }
 
 API int pkgmgr_installer_send_app_uninstall_signal(pkgmgr_installer *pi,
@@ -927,6 +942,12 @@ API int pkgmgr_installer_info_get_privilege_level(pkgmgr_privilege_level *level)
 API int pkgmgr_installer_info_get_debug_mode(int *debug_mode)
 {
 	*debug_mode = g_debug_mode;
+	return 0;
+}
+
+API int pkgmgr_installer_info_get_skip_optimization(int *skip_optimization)
+{
+	*skip_optimization = g_skip_optimization;
 	return 0;
 }
 
