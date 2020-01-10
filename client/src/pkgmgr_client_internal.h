@@ -43,7 +43,7 @@ struct cb_info {
 	pkgmgr_pkg_size_info_receive_cb size_info_cb;
 	void *data;
 	struct pkgmgr_client_t *client;
-	guint sid;
+	GList *sid_list;
 };
 
 struct pkgmgr_client_t {
