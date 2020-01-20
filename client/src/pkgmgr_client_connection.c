@@ -106,21 +106,6 @@ struct signal_map map[] = {
 	{NULL, -1}
 };
 
-static int __get_signal_type(const char *name)
-{
-	int i;
-
-	if (name == NULL)
-		return -1;
-
-	for (i = 0; map[i].signal_str != NULL; i++) {
-		if (strcmp(map[i].signal_str, name) == 0)
-			return map[i].signal_type;
-	}
-
-	return -1;
-}
-
 static void __handle_size_info_callback(struct cb_info *cb_info,
 		const char *pkgid, const char *val)
 {
@@ -187,47 +172,80 @@ static void __handle_size_info_callback(struct cb_info *cb_info,
 	}
 }
 
+static void __convert_signal(char *event_type, char *event_status,
+		char *appid, int progress, char **key, char **val)
+{
+	*key = event_status;
+	if (strcmp(event_status, PKGMGR_INSTALLER_START_KEY_STR) == 0) {
+		*val = event_type;
+	} else if (strcmp(event_status, PKGMGR_INSTALLER_OK_EVENT_STR) == 0 ||
+			strcmp(event_status, PKGMGR_INSTALLER_FAIL_EVENT_STR) == 0) {
+		*key = PKGMGR_INSTALLER_END_KEY_STR;
+		*val = event_status;
+	} else if (strcmp(event_status, PKGMGR_INSTALLER_APPID_KEY_STR) == 0) {
+		if (!appid) {
+			ERR("appid is empty");
+			return;
+		}
+		*val = appid;
+	} else if (strcmp(event_type, PKGMGR_INSTALLER_GET_SIZE_KEY_STR) == 0) {
+		*key = event_type;
+		*val = event_status;
+	}
+	// TODO: should handle cleardata / clearacache signal
+}
+
 static void __signal_handler(GDBusConnection *conn, const gchar *sender_name,
 		const gchar *object_path, const gchar *interface_name,
 		const gchar *signal_name, GVariant *parameters,
 		gpointer user_data)
 {
+	int progress = 0;
 	uid_t target_uid;
+	char buf[BUFMAX];
 	char *req_id;
 	char *pkg_type = NULL;
+	char *appid = NULL;
 	char *pkgid = NULL;
+	char *event_type = NULL;
+	char *event_status = NULL;
 	char *key = NULL;
 	char *val = NULL;
-	char *appid = NULL;
-	int signal_type;
 	struct cb_info *cb_info = (struct cb_info *)user_data;
+	GVariantIter *iter = NULL;
 
-	g_variant_get(parameters, "(u&s&s&s&s&s&s)",
-			&target_uid, &req_id, &pkg_type,
-			&pkgid, &appid, &key, &val);
+	g_variant_get(parameters, "(u&sa(sss)&s&si)", &target_uid, &req_id, &iter,
+			&event_type, &event_status, &progress);
+	while (g_variant_iter_loop(iter, "(&s&s&s)", &pkgid, &appid, &pkg_type)) {
+		if (cb_info->req_key) {
+			if (strcmp(cb_info->req_key, req_id) != 0)
+				continue;
+		}
 
-	/* in case of request, check reqkey */
-	if (cb_info->req_key) {
-		if (strcmp(cb_info->req_key, req_id) != 0)
-			return;
-	} else {
-		signal_type = __get_signal_type(signal_name);
-		if (signal_type < 0 || !(cb_info->status_type & signal_type))
-			return;
+		/* convert event_type and event_status into key-val pair */
+		__convert_signal(event_type, event_status, appid,
+				progress, &key, &val);
+		if (strcmp(event_status,
+					PKGMGR_INSTALLER_INSTALL_PERCENT_KEY_STR) == 0 ||
+				strcmp(event_status, PKGMGR_INSTALLER_ERROR_KEY_STR) == 0) {
+			snprintf(buf, BUFMAX - 1, "%d", progress);
+			val = buf;
+		}
+		/* TODO: progress should be set properly when installation has
+		 * completed or failed */
+
+		if (cb_info->event_cb) {
+			cb_info->event_cb(target_uid, cb_info->req_id,
+					pkg_type, pkgid, key, val, NULL, cb_info->data);
+		} else if (cb_info->app_event_cb && strcmp(appid, "") != 0) {
+			cb_info->app_event_cb(target_uid, cb_info->req_id,
+					pkg_type, pkgid, appid, key, val, NULL,
+					cb_info->data);
+		} else if (cb_info->size_info_cb)
+			__handle_size_info_callback(cb_info, pkgid, val);
+
+		/* TODO: unsubscribe request callback */
 	}
-
-	/* each cb_data can only has one callback */
-	if (cb_info->event_cb && strcmp(appid, "") == 0)
-		cb_info->event_cb(target_uid, cb_info->req_id,
-				pkg_type, pkgid, key, val, NULL, cb_info->data);
-	else if (cb_info->app_event_cb && strcmp(appid, "") != 0)
-		cb_info->app_event_cb(target_uid, cb_info->req_id,
-				pkg_type, pkgid, appid, key, val, NULL,
-				cb_info->data);
-	else if (cb_info->size_info_cb)
-		__handle_size_info_callback(cb_info, pkgid, val);
-
-	/* TODO: unsubscribe request callback */
 }
 
 int pkgmgr_client_connection_set_callback(struct pkgmgr_client_t *pc,
