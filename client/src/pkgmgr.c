@@ -1663,32 +1663,6 @@ catch:
 	return ret;
 }
 
-
-API int pkgmgr_client_usr_request_size_info(uid_t uid)
-{
-	int ret;
-	struct pkgmgr_client *client;
-
-	client = pkgmgr_client_new(PC_REQUEST);
-	if (client == NULL) {
-		ERR("out of memory");
-		return PKGMGR_R_ENOMEM;
-	}
-
-	ret = __request_size_info(client, uid);
-	if (ret < 0)
-		ERR("__request_size_info fail");
-
-	pkgmgr_client_free(client);
-	return ret;
-}
-
-API int pkgmgr_client_request_size_info(void)
-{
-	/* get all package size (data, total) */
-	return pkgmgr_client_usr_request_size_info(_getuid());
-}
-
 API int pkgmgr_client_usr_clear_cache_dir(const char *pkgid, uid_t uid)
 {
 	GVariant *result;
