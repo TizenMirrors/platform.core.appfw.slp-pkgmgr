@@ -286,6 +286,10 @@ static int __send_signal_for_event_for_uid(pkgmgr_installer *pi, uid_t uid,
 	data_len += gv_len;
 
 	data = malloc(data_len);
+	if (data == NULL) {
+		ERR("out of memory");
+		return -1;
+	}
 	ptr = data;
 	memcpy(ptr, &name_size, sizeof(size_t));
 	ptr += sizeof(size_t);
