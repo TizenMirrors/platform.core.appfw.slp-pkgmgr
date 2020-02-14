@@ -1066,6 +1066,33 @@ int pkgmgr_installer_set_privilege_level(pkgmgr_privilege_level level);
 */
 const char *pkgmgr_installer_error_to_string(int error_code);
 
+/**
+ * @brief	This API adds pkg to be send at once
+ *
+ *              This API is for installer backend.\n
+ *
+ * @param[in]	pi				pointer to pkgmgr_installer
+ * @param[in]	pkgid				package ID
+ * @param[in]	pkg_type			type of package
+ * @return	0 if success, error code(<0) if fail\n
+*/
+int pkgmgr_installer_add_pkg(pkgmgr_installer *pi,
+		const char *pkgid, const char *pkg_type);
+
+/**
+ * @brief	This API sends signals with packages already added
+ *
+ *              This API is for installer backend.\n
+ *
+ * @param[in]	pi					pointer to pkgmgr_installer
+ * @param[in]	event_type			package ID
+ * @param[in]	event_status		type of package
+ * @param[in]	progress			progress of requested operation
+ * @return	0 if success, error code(<0) if fail\n
+*/
+int pkgmgr_installer_send_signals(pkgmgr_installer *pi,
+		const char *event_type, const char *event_status, int progress);
+
 #ifdef __cplusplus
 }
 #endif
