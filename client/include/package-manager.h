@@ -287,6 +287,28 @@ int pkgmgr_client_free(pkgmgr_client *pc);
 int pkgmgr_client_set_tep_path(pkgmgr_client *pc, const char *tep_path, bool tep_move);
 
 /**
+ * @brief	This API installs packages.
+ *
+ * This API is for package-manager client application.\n
+ *
+ * @param[in]	pc		pkgmgr_client
+ * @param[in]	pkg_paths	full paths that package file is located
+ * @param[in]	n_pkgs		number of packages
+ * @param[in]	event_cb	user callback
+ * @param[in]	data		user data
+ * @return	request_id (>0) if success, error code(<0) if fail\n
+ * @retval	PKGMGR_R_OK	success
+ * @retval	PKGMGR_R_EINVAL	invalid argument
+ * @retval	PKGMGR_R_ECOMM	communication error
+ */
+int pkgmgr_client_install_packages(pkgmgr_client *pc,
+		const char **pkg_paths, int n_pkgs, pkgmgr_handler event_cb,
+		void *data);
+int pkgmgr_client_usr_install_packages(pkgmgr_client *pc,
+		const char **pkg_paths, int n_pkgs, pkgmgr_handler event_cb,
+		void *data, uid_t uid);
+
+/**
  * @brief	This API installs package.
  *
  * This API is for package-manager client application.\n
@@ -312,6 +334,7 @@ int pkgmgr_client_usr_install(pkgmgr_client *pc, const char *pkg_type,
 			    const char *descriptor_path, const char *pkg_path,
 			    const char *optional_data, pkgmgr_mode mode,
 			    pkgmgr_handler event_cb, void *data, uid_t uid);
+
 /**
  * @brief	This API reinstalls package.
  *
@@ -335,6 +358,28 @@ int pkgmgr_client_reinstall(pkgmgr_client *pc, const char *pkg_type, const char 
 int pkgmgr_client_usr_reinstall(pkgmgr_client *pc, const char *pkg_type, const char *pkgid,
 				  const char *optional_data, pkgmgr_mode mode,
 			      pkgmgr_handler event_cb, void *data, uid_t uid);
+
+/**
+ * @brief	This API mount-installs packages.
+ *
+ * This API is for package-manager client application.\n
+ *
+ * @param[in]	pc		pkgmgr_client
+ * @param[in]	pkg_paths	full paths that package file is located
+ * @param[in]	n_pkgs		number of packages
+ * @param[in]	event_cb	user callback
+ * @param[in]	data		user data
+ * @return	request_id (>0) if success, error code(<0) if fail\n
+ * @retval	PKGMGR_R_OK	success
+ * @retval	PKGMGR_R_EINVAL	invalid argument
+ * @retval	PKGMGR_R_ECOMM	communication error
+ */
+int pkgmgr_client_mount_install_packages(pkgmgr_client *pc,
+		const char **pkg_paths, int n_pkgs, pkgmgr_handler event_cb,
+		void *data);
+int pkgmgr_client_usr_mount_install_packages(pkgmgr_client *pc,
+		const char **pkg_paths, int n_pkgs, pkgmgr_handler event_cb,
+		void *data, uid_t uid);
 
 /**
  * @brief	This API mount-installs package.
@@ -362,6 +407,28 @@ int pkgmgr_client_usr_mount_install(pkgmgr_client *pc, const char *pkg_type,
 			    const char *descriptor_path, const char *pkg_path,
 			    const char *optional_data, pkgmgr_mode mode,
 			    pkgmgr_handler event_cb, void *data, uid_t uid);
+
+/**
+ * @brief	This API uninstalls packages.
+ *
+ * This API is for package-manager client application.\n
+ *
+ * @param[in]	pc		pkgmgr_client
+ * @param[in]	pkgids		package ids
+ * @param[in]	n_pkgs		number of packages
+ * @param[in]	event_cb	user callback
+ * @param[in]	data		user data
+ * @return	request_id (>0) if success, error code(<0) if fail\n
+ * @retval	PKGMGR_R_OK	success
+ * @retval	PKGMGR_R_EINVAL	invalid argument
+ * @retval	PKGMGR_R_ECOMM	communication error
+ */
+int pkgmgr_client_uninstall_packages(pkgmgr_client *pc,
+		const char **pkgids, int n_pkgs, pkgmgr_handler event_cb,
+		void *data);
+int pkgmgr_client_usr_uninstall_packages(pkgmgr_client *pc,
+		const char **pkgids, int n_pkgs, pkgmgr_handler event_cb,
+		void *data, uid_t uid);
 
 /**
  * @brief	This API uninstalls package.

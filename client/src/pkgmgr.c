@@ -375,6 +375,86 @@ API int pkgmgr_client_set_tep_path(pkgmgr_client *pc, const char *tep_path,
 	return PKGMGR_R_OK;
 }
 
+API int pkgmgr_client_usr_install_packages(pkgmgr_client *pc,
+		const char **pkg_paths, int n_pkgs, pkgmgr_handler event_cb,
+		void *data, uid_t uid)
+{
+	GVariant *result;
+	GVariantBuilder *pkgs_builder;
+	GVariant *pkgs;
+	GVariantBuilder *args_builder;
+	GVariant *args;
+	int ret;
+	char *req_key = NULL;
+	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
+	struct cb_info *cb_info;
+	int i;
+
+	if (pc == NULL || pkg_paths == NULL || n_pkgs < 1) {
+		ERR("invalid parameter");
+		return PKGMGR_R_EINVAL;
+	}
+
+	if (client->pc_type != PC_REQUEST) {
+		ERR("client type is not PC_REQUEST");
+		return PKGMGR_R_EINVAL;
+	}
+
+	pkgs_builder = g_variant_builder_new(G_VARIANT_TYPE("as"));
+	for (i = 0; i < n_pkgs; i++)
+		g_variant_builder_add(pkgs_builder, "s", pkg_paths[i]);
+	pkgs = g_variant_new("as", pkgs_builder);
+	g_variant_builder_unref(pkgs_builder);
+
+	args_builder = g_variant_builder_new(G_VARIANT_TYPE("as"));
+	if (client->debug_mode)
+		g_variant_builder_add(args_builder, "s", "-G");
+	if (client->skip_optimization)
+		g_variant_builder_add(args_builder, "s", "-S");
+	args = g_variant_new("as", args_builder);
+	g_variant_builder_unref(args_builder);
+
+	ret = pkgmgr_client_connection_send_request(client, "install_pkgs",
+			g_variant_new("(u@as@as)", uid, pkgs, args), &result);
+	if (ret != PKGMGR_R_OK) {
+		ERR("request failed: %d", ret);
+		return ret;
+	}
+
+	g_variant_get(result, "(i&s)", &ret, &req_key);
+	if (req_key == NULL) {
+		g_variant_unref(result);
+		return PKGMGR_R_ECOMM;
+	}
+	if (ret != PKGMGR_R_OK) {
+		g_variant_unref(result);
+		return ret;
+	}
+
+	cb_info = __create_event_cb_info(client, event_cb, data, req_key);
+	if (cb_info == NULL) {
+		g_variant_unref(result);
+		return PKGMGR_R_ERROR;
+	}
+	g_variant_unref(result);
+	ret = pkgmgr_client_connection_set_callback(client, cb_info);
+	if (ret != PKGMGR_R_OK) {
+		__free_cb_info(cb_info);
+		return ret;
+	}
+	client->cb_info_list = g_list_append(client->cb_info_list, cb_info);
+
+	return cb_info->req_id;
+}
+
+API int pkgmgr_client_install_packages(pkgmgr_client *pc,
+		const char **pkg_paths, int n_pkgs, pkgmgr_handler event_cb,
+		void *data)
+{
+	return pkgmgr_client_usr_install_packages(pc, pkg_paths, n_pkgs,
+			event_cb, data, _getuid());
+}
+
 API int pkgmgr_client_usr_install(pkgmgr_client *pc, const char *pkg_type,
 		const char *descriptor_path, const char *pkg_path,
 		const char *optional_data, pkgmgr_mode mode,
@@ -532,6 +612,77 @@ API int pkgmgr_client_usr_reinstall(pkgmgr_client *pc, const char *pkg_type,
 	return cb_info->req_id;
 }
 
+API int pkgmgr_client_usr_mount_install_packages(pkgmgr_client *pc,
+		const char **pkg_paths, int n_pkgs, pkgmgr_handler event_cb,
+		void *data, uid_t uid)
+{
+	GVariant *result;
+	GVariantBuilder *pkgs_builder;
+	GVariant *pkgs;
+	int ret = PKGMGR_R_ECOMM;
+	char *req_key = NULL;
+	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
+	struct cb_info *cb_info;
+	int i;
+
+	if (pc == NULL || pkg_paths == NULL || n_pkgs < 1) {
+		ERR("invalid parameter");
+		return PKGMGR_R_EINVAL;
+	}
+
+	if (client->pc_type != PC_REQUEST) {
+		ERR("client->pc_type is not PC_REQUEST");
+		return PKGMGR_R_EINVAL;
+	}
+
+	pkgs_builder = g_variant_builder_new(G_VARIANT_TYPE("as"));
+	for (i = 0; i < n_pkgs; i++)
+		g_variant_builder_add(pkgs_builder, "s", pkg_paths[i]);
+	pkgs = g_variant_new("as", pkgs_builder);
+	g_variant_builder_unref(pkgs_builder);
+
+	ret = pkgmgr_client_connection_send_request(client,
+			"mount_install_pkgs",
+			g_variant_new("(u@as)", uid, pkgs), &result);
+	if (ret != PKGMGR_R_OK) {
+		ERR("request failed: %d", ret);
+		return ret;
+	}
+
+	g_variant_get(result, "(i&s)", &ret, &req_key);
+	if (req_key == NULL) {
+		g_variant_unref(result);
+		return PKGMGR_R_ECOMM;
+	}
+	if (ret != PKGMGR_R_OK) {
+		g_variant_unref(result);
+		return ret;
+	}
+
+	cb_info = __create_event_cb_info(client, event_cb, data, req_key);
+	if (cb_info == NULL) {
+		g_variant_unref(result);
+		return PKGMGR_R_ENOMEM;
+	}
+	g_variant_unref(result);
+	ret = pkgmgr_client_connection_set_callback(client, cb_info);
+	if (ret != PKGMGR_R_OK) {
+		__free_cb_info(cb_info);
+		return ret;
+	}
+	client->cb_info_list = g_list_append(client->cb_info_list, cb_info);
+
+	return cb_info->req_id;
+}
+
+API int pkgmgr_cient_mount_install_packages(pkgmgr_client *pc,
+		const char **pkg_paths, int n_pkgs, pkgmgr_handler event_cb,
+		void *data)
+{
+	return pkgmgr_client_usr_mount_install_packages(pc, pkg_paths, n_pkgs,
+			event_cb, data, _getuid());
+}
+
 API int pkgmgr_client_usr_mount_install(pkgmgr_client *pc, const char *pkg_type,
 		const char *descriptor_path, const char *pkg_path,
 		const char *optional_data, pkgmgr_mode mode,
@@ -622,6 +773,76 @@ API int pkgmgr_client_mount_install(pkgmgr_client *pc, const char *pkg_type,
 	return pkgmgr_client_usr_mount_install(pc, pkg_type, descriptor_path,
 			pkg_path, optional_data, mode, event_cb, data,
 			_getuid());
+}
+
+API int pkgmgr_client_usr_uninstall_packages(pkgmgr_client *pc,
+		const char **pkgids, int n_pkgs, pkgmgr_handler event_cb,
+		void *data, uid_t uid)
+{
+	GVariant *result;
+	GVariantBuilder *pkgs_builder;
+	GVariant *pkgs;
+	int ret = PKGMGR_R_ECOMM;
+	char *req_key = NULL;
+	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
+	struct cb_info *cb_info;
+	int i;
+
+	if (pc == NULL || pkgids == NULL || n_pkgs < 1) {
+		ERR("invalid parameter");
+		return PKGMGR_R_EINVAL;
+	}
+
+	if (client->pc_type != PC_REQUEST) {
+		ERR("client->pc_type is not PC_REQUEST");
+		return PKGMGR_R_EINVAL;
+	}
+
+	pkgs_builder = g_variant_builder_new(G_VARIANT_TYPE("as"));
+	for (i = 0; i < n_pkgs; i++)
+		g_variant_builder_add(pkgs_builder, "s", pkgids[i]);
+	pkgs = g_variant_new("as", pkgs_builder);
+	g_variant_builder_unref(pkgs_builder);
+
+	ret = pkgmgr_client_connection_send_request(client, "uninstall_pkgs",
+			g_variant_new("(u@as)", uid, pkgs), &result);
+	if (ret != PKGMGR_R_OK) {
+		ERR("request failed: %d", ret);
+		return ret;
+	}
+
+	g_variant_get(result, "(i&s)", &ret, &req_key);
+	if (req_key == NULL) {
+		g_variant_unref(result);
+		return PKGMGR_R_ECOMM;
+	}
+	if (ret != PKGMGR_R_OK) {
+		g_variant_unref(result);
+		return ret;
+	}
+
+	cb_info = __create_event_cb_info(client, event_cb, data, req_key);
+	if (cb_info == NULL) {
+		g_variant_unref(result);
+		return PKGMGR_R_ENOMEM;
+	}
+	g_variant_unref(result);
+	ret = pkgmgr_client_connection_set_callback(client, cb_info);
+	if (ret != PKGMGR_R_OK) {
+		__free_cb_info(cb_info);
+		return ret;
+	}
+	client->cb_info_list = g_list_append(client->cb_info_list, cb_info);
+
+	return cb_info->req_id;
+}
+
+API int pkgmgr_client_uninstall_packages(pkgmgr_client *pc,
+		const char **pkgids, int n_pkgs, pkgmgr_handler event_cb,
+		void *data)
+{
+	return pkgmgr_client_usr_uninstall_packages(pc, pkgids, n_pkgs,
+			event_cb, data, _getuid());
 }
 
 API int pkgmgr_client_uninstall(pkgmgr_client *pc, const char *pkg_type,
