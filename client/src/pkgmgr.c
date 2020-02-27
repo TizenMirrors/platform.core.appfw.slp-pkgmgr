@@ -276,36 +276,6 @@ static int __check_app_process(pkgmgr_request_service_type service_type,
 
 }
 
-static int __request_size_info(pkgmgr_client *pc, uid_t uid)
-{
-	GVariant *result;
-	int ret = PKGMGR_R_ECOMM;
-	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
-
-	if (pc == NULL) {
-		ERR("invalid parameter");
-		return PKGMGR_R_EINVAL;
-	}
-
-	if (client->pc_type != PC_REQUEST) {
-		ERR("client->pc_type is not PC_REQUEST");
-		return PKGMGR_R_EINVAL;
-	}
-
-	ret = pkgmgr_client_connection_send_request(client, "getsize",
-			g_variant_new("(usi)", uid, "size_info",
-				PM_GET_SIZE_INFO), &result);
-	if (ret != PKGMGR_R_OK) {
-		ERR("request failed: %d", ret);
-		return ret;
-	}
-
-	/* just free result here because it cannot return result(reqkey) */
-	g_variant_unref(result);
-
-	return ret;
-}
-
 API pkgmgr_client *pkgmgr_client_new(pkgmgr_client_type pc_type)
 {
 	struct pkgmgr_client_t *client;
