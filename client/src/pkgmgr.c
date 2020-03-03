@@ -154,7 +154,7 @@ static struct cb_info *__create_size_info_cb_info(
 static gboolean __free_cb_info_at_main_thread(gpointer user_data)
 {
 	struct cb_info *cb_info = (struct cb_info *)user_data;
-
+	g_list_free(cb_info->sid_list);
 	free(cb_info->req_key);
 	free(cb_info);
 

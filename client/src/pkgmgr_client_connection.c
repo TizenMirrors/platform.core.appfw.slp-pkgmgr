@@ -248,26 +248,72 @@ static void __signal_handler(GDBusConnection *conn, const gchar *sender_name,
 	}
 }
 
-int pkgmgr_client_connection_set_callback(struct pkgmgr_client_t *pc,
-		struct cb_info *cb_info)
+static void __set_signal_list(int event, GList **signal_list)
 {
-	cb_info->sid = g_dbus_connection_signal_subscribe(pc->conn, NULL,
-			PKGMGR_INSTALLER_DBUS_INTERFACE, NULL,
+	int i;
+	if (event == PKGMGR_CLIENT_STATUS_ALL)
+		return;
+
+	for (i = 0; map[i].signal_str != NULL; i++) {
+		if (event & map[i].signal_type)
+			*signal_list = g_list_append(*signal_list,
+					(char *)map[i].signal_str);
+	}
+}
+
+static int __subscribe_signal(struct pkgmgr_client_t *pc,
+		struct cb_info *cb_info, const char *signal)
+{
+	guint sid = g_dbus_connection_signal_subscribe(pc->conn, NULL,
+			PKGMGR_INSTALLER_DBUS_INTERFACE, signal,
 			PKGMGR_INSTALLER_DBUS_OBJECT_PATH, NULL,
 			G_DBUS_SIGNAL_FLAGS_NONE, __signal_handler,
 			(gpointer)cb_info, NULL);
-	if (!cb_info->sid) {
+	if (!sid) {
 		ERR("failed to subscribe singal");
 		return PKGMGR_R_ERROR;
 	}
+	cb_info->sid_list = g_list_append(cb_info->sid_list,
+			GUINT_TO_POINTER(sid));
 
+	return PKGMGR_R_OK;
+}
+
+int pkgmgr_client_connection_set_callback(struct pkgmgr_client_t *pc,
+		struct cb_info *cb_info)
+{
+	GList *signal_list = NULL;
+	GList *tmp_list = NULL;
+	int ret;
+	char *signal_type;
+	__set_signal_list(pc->status_type, &signal_list);
+
+	if (g_list_length(signal_list) == 0)
+		return __subscribe_signal(pc, cb_info, NULL);
+
+	for (tmp_list = signal_list; tmp_list != NULL;
+			tmp_list = g_list_next(tmp_list)) {
+		signal_type = (char *)tmp_list->data;
+		ret = __subscribe_signal(pc, cb_info, signal_type);
+		if (ret != 0) {
+			g_list_free(signal_list);
+			return PKGMGR_R_ERROR;
+		}
+	}
+
+	g_list_free(signal_list);
 	return PKGMGR_R_OK;
 }
 
 void pkgmgr_client_connection_unset_callback(struct pkgmgr_client_t *pc,
 		struct cb_info *cb_info)
 {
-	g_dbus_connection_signal_unsubscribe(pc->conn, cb_info->sid);
+	GList *tmp = NULL;
+	guint tmp_sid;
+	for (tmp = cb_info->sid_list; tmp != NULL; tmp = g_list_next(tmp)) {
+		tmp_sid = GPOINTER_TO_UINT(tmp->data);
+		g_dbus_connection_signal_unsubscribe(pc->conn, tmp_sid);
+	}
 }
 
 int pkgmgr_client_connection_send_request(struct pkgmgr_client_t *pc,
