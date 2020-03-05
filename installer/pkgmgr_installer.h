@@ -1084,14 +1084,27 @@ int pkgmgr_installer_add_pkg(pkgmgr_installer *pi,
  *
  *              This API is for installer backend.\n
  *
- * @param[in]	pi					pointer to pkgmgr_installer
- * @param[in]	event_type			package ID
- * @param[in]	event_status		type of package
- * @param[in]	progress			progress of requested operation
+ * @param[in]	pi			pointer to pkgmgr_installer
+ * @param[in]	key			Signal key
+ * @param[in]	val			Signal value
  * @return	0 if success, error code(<0) if fail\n
 */
 int pkgmgr_installer_send_signals(pkgmgr_installer *pi,
-		const char *event_type, const char *event_status, int progress);
+		const char *key, const char *val);
+
+/**
+ * @brief	This API sends signals to certain uid with packages already added
+ *
+ *              This API is for installer backend.\n
+ *
+ * @param[in]	pi			pointer to pkgmgr_installer
+ * @param[in]	uid			user id
+ * @param[in]	key			Signal key
+ * @param[in]	val			Signal value
+ * @return	0 if success, error code(<0) if fail\n
+*/
+int pkgmgr_installer_send_signals_for_uid(pkgmgr_installer *pi, uid_t uid,
+		const char *key, const char *val);
 
 #ifdef __cplusplus
 }

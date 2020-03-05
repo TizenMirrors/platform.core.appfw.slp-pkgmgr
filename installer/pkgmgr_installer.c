@@ -131,8 +131,18 @@ static int g_debug_mode;
 static int g_skip_optimization;
 static pkgmgr_privilege_level g_privilege_level = PM_PRIVILEGE_UNKNOWN;
 
-static const char *__get_event_type(pkgmgr_installer *pi)
+static const char *__get_signal_name(pkgmgr_installer *pi, const char *key,
+		const char *pkg_type)
 {
+	if (strcmp(key, PKGMGR_INSTALLER_INSTALL_PERCENT_KEY_STR) == 0)
+		return key;
+	else if (strcmp(key, PKGMGR_INSTALLER_GET_SIZE_KEY_STR) == 0)
+		return key;
+	else if (strcmp(key, PKGMGR_INSTALLER_APPID_KEY_STR) == 0)
+		return PKGMGR_INSTALLER_UNINSTALL_EVENT_STR;
+	else if (strcmp(pkg_type, PKGMGR_INSTALLER_CLEAR_CACHE_KEY_STR) == 0)
+		return pkg_type;
+
 	switch (pi->request_type) {
 	case PKGMGR_REQ_INSTALL:
 	case PKGMGR_REQ_MANIFEST_DIRECT_INSTALL:
@@ -167,30 +177,12 @@ static const char *__get_event_type(pkgmgr_installer *pi)
 	return NULL;
 }
 
-static const char *__get_signal_name(pkgmgr_installer *pi, const char *key,
-		const char *pkg_type)
-{
-	if (strcmp(key, PKGMGR_INSTALLER_INSTALL_PERCENT_KEY_STR) == 0)
-		return key;
-	else if (strcmp(key, PKGMGR_INSTALLER_GET_SIZE_KEY_STR) == 0)
-		return key;
-	else if (strcmp(key, PKGMGR_INSTALLER_APPID_KEY_STR) == 0)
-		return PKGMGR_INSTALLER_UNINSTALL_EVENT_STR;
-	else if (strcmp(pkg_type, PKGMGR_INSTALLER_CLEAR_CACHE_KEY_STR) == 0)
-		return pkg_type;
-
-	return __get_event_type(pi);
-}
-
 static int __send_signal_for_event(pkgmgr_installer *pi, const char *pkg_type,
 		const char *pkgid, const char *appid, const char *key,
 		const char *val)
 {
-	int progress = 0;
 	char *sid;
 	const char *tmp_appid = appid;
-	const char *event_type;
-	const char *event_status;
 	const char *signal_name;
 	GVariantBuilder *builder;
 	GError *err = NULL;
@@ -202,29 +194,11 @@ static int __send_signal_for_event(pkgmgr_installer *pi, const char *pkg_type,
 	if (!sid)
 		sid = "";
 
-	signal_name = __get_signal_name(pi, key, val);
+	signal_name = __get_signal_name(pi, key, pkg_type);
 	if (!signal_name) {
-		ERR("unknown signal name");
+		ERR("unknown signal type");
 		return -1;
 	}
-
-	event_type = __get_event_type(pi);
-	if (!event_type) {
-		ERR("unknown event type");
-		return -1;
-	}
-
-	if (strcmp(key, PKGMGR_INSTALLER_END_KEY_STR) == 0 ||
-			strcmp(key, PKGMGR_INSTALLER_GET_SIZE_KEY_STR) == 0)
-		event_status = val;
-	else
-		event_status = key;
-
-	if (strcmp(key, PKGMGR_INSTALLER_INSTALL_PERCENT_KEY_STR) == 0 ||
-			strcmp(key, PKGMGR_INSTALLER_ERROR_KEY_STR) == 0)
-		progress = atoi(val);
-	else if (strcmp(key, PKGMGR_INSTALLER_APPID_KEY_STR) == 0)
-		tmp_appid = val;
 
 	builder = g_variant_builder_new(G_VARIANT_TYPE("a(sss)"));
 	g_variant_builder_add(builder, "(sss)", pkgid,
@@ -232,9 +206,8 @@ static int __send_signal_for_event(pkgmgr_installer *pi, const char *pkg_type,
 	if (g_dbus_connection_emit_signal(pi->conn, NULL,
 				PKGMGR_INSTALLER_DBUS_OBJECT_PATH,
 				PKGMGR_INSTALLER_DBUS_INTERFACE, signal_name,
-				g_variant_new("(usa(sss)ssi)", pi->target_uid, sid,
-						builder, event_type, event_status, progress),
-				&err) != TRUE) {
+				g_variant_new("(usa(sss)ss)", pi->target_uid, sid,
+						builder, key, val), &err) != TRUE) {
 		ERR("failed to send dbus signal");
 		if (err) {
 			ERR("err: %s", err->message);
@@ -242,6 +215,7 @@ static int __send_signal_for_event(pkgmgr_installer *pi, const char *pkg_type,
 		}
 		return -1;
 	}
+
 	return 0;
 }
 
@@ -283,12 +257,9 @@ static int __send_signal_for_event_for_uid(pkgmgr_installer *pi, uid_t uid,
 		const char *pkg_type, const char *pkgid, const char *appid,
 		const char *key, const char *val)
 {
-	int progress = 0;
 	char *sid;
 	const char *signal_name;
 	const char *tmp_appid = appid;
-	const char *event_type;
-	const char *event_status;
 	size_t name_size;
 	GVariantBuilder *builder;
 	GVariant *gv;
@@ -313,25 +284,6 @@ static int __send_signal_for_event_for_uid(pkgmgr_installer *pi, uid_t uid,
 		return -1;
 	}
 
-	event_type = __get_event_type(pi);
-	if (!event_type) {
-		ERR("unknown event type");
-		return -1;
-	}
-
-	if (strcmp(key, PKGMGR_INSTALLER_END_KEY_STR) == 0 ||
-			strcmp(key, PKGMGR_INSTALLER_GET_SIZE_KEY_STR) == 0)
-		event_status = val;
-	else
-		event_status = key;
-
-	if (strcmp(key, PKGMGR_INSTALLER_INSTALL_PERCENT_KEY_STR) == 0 ||
-			strcmp(key, PKGMGR_INSTALLER_ERROR_KEY_STR) == 0)
-		progress = atoi(val);
-	else if (strcmp(key, PKGMGR_INSTALLER_APPID_KEY_STR) == 0)
-		tmp_appid = val;
-
-
 	/* including null byte */
 	name_size = strlen(signal_name) + 1;
 	data_len += name_size;
@@ -339,8 +291,8 @@ static int __send_signal_for_event_for_uid(pkgmgr_installer *pi, uid_t uid,
 	builder = g_variant_builder_new(G_VARIANT_TYPE("a(sss)"));
 	g_variant_builder_add(builder, "(sss)", pkgid,
 			(tmp_appid ? tmp_appid : ""), pkg_type);
-	gv = g_variant_new("(usa(sss)ssi)", pi->target_uid, sid,
-			builder, event_type, event_status, progress);
+	gv = g_variant_new("(usa(sss)ss)", pi->target_uid, sid,
+			builder, key, val);
 	if (gv == NULL) {
 		ERR("failed to create GVariant instance");
 		return -1;
@@ -1083,14 +1035,14 @@ API int pkgmgr_installer_add_pkg(pkgmgr_installer *pi,
 
 	info->pkgid = strdup(pkgid);
 	info->pkg_type = strdup(pkg_type);
-	if (!info->pkgid || info->pkg_type) {
+	if (!info->pkgid || !info->pkg_type) {
 		ERR("out of memory");
 		free(info->pkgid);
 		free(info->pkg_type);
 		free(info);
 		return -1;
 	}
-	g_hash_table_insert(pi->pkg_list, (gpointer)pkgid, (gpointer)info);
+	g_hash_table_insert(pi->pkg_list, (gpointer)info->pkgid, (gpointer)info);
 
 	return 0;
 }
@@ -1099,20 +1051,20 @@ static void __build_multi_signal(gpointer key, gpointer value,
 		gpointer user_data)
 {
 	GVariantBuilder *builder = (GVariantBuilder *)user_data;
-	char *pkgid = (char *)key;
 	pkg_signal_info *info = (pkg_signal_info *)value;
 
-	g_variant_builder_add(builder, "(sss)", pkgid, "", info->pkg_type);
+	g_variant_builder_add(builder, "(sss)", info->pkgid, "", info->pkg_type);
 }
 
 API int pkgmgr_installer_send_signals(pkgmgr_installer *pi,
-		const char *event_type, const char *event_status, int progress)
+		const char *key, const char *val)
 {
 	char *sid;
+	const char *signal_name;
 	GError *err = NULL;
 	GVariantBuilder *builder;
 
-	if (!pi || !event_type || !event_status) {
+	if (!pi || !key || !val) {
 		ERR("invalid argument");
 		return -1;
 	}
@@ -1121,14 +1073,20 @@ API int pkgmgr_installer_send_signals(pkgmgr_installer *pi,
 	if (!sid)
 		sid = "";
 
+	signal_name = __get_signal_name(pi, key, "");
+	if (!signal_name) {
+		ERR("unknown signal type");
+		return -1;
+	}
+
 	builder = g_variant_builder_new(G_VARIANT_TYPE("a(sss)"));
 	g_hash_table_foreach(pi->pkg_list, __build_multi_signal, builder);
 	if (g_dbus_connection_emit_signal(pi->conn, NULL,
 				PKGMGR_INSTALLER_DBUS_OBJECT_PATH,
-				PKGMGR_INSTALLER_DBUS_INTERFACE, event_type,
-				g_variant_new("(usa(sss)ssi)",
-						pi->target_uid, sid, builder, event_type,
-						event_status, progress), &err) != TRUE) {
+				PKGMGR_INSTALLER_DBUS_INTERFACE, signal_name,
+				g_variant_new("(usa(sss)ss)",
+						pi->target_uid, sid, builder, key,
+						val), &err) != TRUE) {
 		ERR("failed to send dbus signal");
 		if (err) {
 			ERR("err: %s", err->message);
@@ -1138,6 +1096,81 @@ API int pkgmgr_installer_send_signals(pkgmgr_installer *pi,
 		return -1;
 	}
 	g_variant_builder_unref(builder);
+
+	return 0;
+}
+
+API int pkgmgr_installer_send_signals_for_uid(pkgmgr_installer *pi, uid_t uid,
+		const char *key, const char *val)
+{
+	char *sid;
+	size_t data_len;
+	size_t name_size;
+	GVariant *gv;
+	GVariantBuilder *builder;
+	gsize gv_len;
+	gpointer gv_data;
+	void *data;
+	void *ptr;
+	const char *signal_name;
+
+	if (!pi || !pi->conn) {
+		ERR("connection is NULL");
+		return -1;
+	}
+
+	sid = pi->session_id;
+	if (!sid)
+		sid = "";
+
+	data_len = sizeof(size_t) + sizeof(gsize);
+
+	/* including null byte */
+	signal_name = __get_signal_name(pi, key, "");
+	if (!signal_name) {
+		ERR("unknown signal type");
+		return -1;
+	}
+	name_size = strlen(signal_name) + 1;
+	data_len += name_size;
+
+	builder = g_variant_builder_new(G_VARIANT_TYPE("a(sss)"));
+	g_hash_table_foreach(pi->pkg_list, __build_multi_signal, builder);
+
+	gv = g_variant_new("(usa(sss)ss)", uid, sid, builder, key, val);
+	if (gv == NULL) {
+		ERR("failed to create GVariant instance");
+		return -1;
+	}
+
+	gv_len = g_variant_get_size(gv);
+	gv_data = g_malloc(gv_len);
+	g_variant_store(gv, gv_data);
+	g_variant_unref(gv);
+	data_len += gv_len;
+
+	data = malloc(data_len);
+	if (data == NULL) {
+		ERR("out of memory");
+		return -1;
+	}
+	ptr = data;
+	memcpy(ptr, &name_size, sizeof(size_t));
+	ptr += sizeof(size_t);
+	memcpy(ptr, &gv_len, sizeof(gsize));
+	ptr += sizeof(gsize);
+	memcpy(ptr, signal_name, name_size);
+	ptr += name_size;
+	memcpy(ptr, gv_data, gv_len);
+	g_free(gv_data);
+
+	if (__send_signal_to_agent(uid, data, data_len)) {
+		ERR("failed to send signal to agent");
+		free(data);
+		return -1;
+	}
+
+	free(data);
 
 	return 0;
 }

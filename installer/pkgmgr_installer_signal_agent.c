@@ -257,7 +257,7 @@ static gboolean __handle_signal(gint fd, GIOCondition cond, gpointer user_data)
 	memcpy(data, buf + type_len, data_len);
 
 	/* floating type GVariant instance */
-	gv = g_variant_new_from_data(G_VARIANT_TYPE("(usa(sss)ssi)"), data,
+	gv = g_variant_new_from_data(G_VARIANT_TYPE("(usa(sss)ss)"), data,
 			data_len, TRUE, NULL, NULL);
 	__emit_signal(type_name, gv);
 
