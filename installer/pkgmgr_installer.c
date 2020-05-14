@@ -184,6 +184,7 @@ static int __send_signal_for_event(pkgmgr_installer *pi, const char *pkg_type,
 	char *sid;
 	const char *tmp_appid = appid;
 	const char *signal_name;
+	GVariant *v;
 	GVariantBuilder *builder;
 	GError *err = NULL;
 
@@ -203,11 +204,13 @@ static int __send_signal_for_event(pkgmgr_installer *pi, const char *pkg_type,
 	builder = g_variant_builder_new(G_VARIANT_TYPE("a(sss)"));
 	g_variant_builder_add(builder, "(sss)", pkgid,
 			(tmp_appid ? tmp_appid : ""), pkg_type);
+	v = g_variant_new("(usa(sss)ss)",
+			pi->target_uid, sid, builder, key, val);
+	g_variant_builder_unref(builder);
 	if (g_dbus_connection_emit_signal(pi->conn, NULL,
 				PKGMGR_INSTALLER_DBUS_OBJECT_PATH,
 				PKGMGR_INSTALLER_DBUS_INTERFACE, signal_name,
-				g_variant_new("(usa(sss)ss)", pi->target_uid, sid,
-						builder, key, val), &err) != TRUE) {
+				v, &err) != TRUE) {
 		ERR("failed to send dbus signal");
 		if (err) {
 			ERR("err: %s", err->message);
@@ -293,6 +296,7 @@ static int __send_signal_for_event_for_uid(pkgmgr_installer *pi, uid_t uid,
 			(tmp_appid ? tmp_appid : ""), pkg_type);
 	gv = g_variant_new("(usa(sss)ss)", pi->target_uid, sid,
 			builder, key, val);
+	g_variant_builder_unref(builder);
 	if (gv == NULL) {
 		ERR("failed to create GVariant instance");
 		return -1;
@@ -1138,6 +1142,7 @@ API int pkgmgr_installer_send_signals_for_uid(pkgmgr_installer *pi, uid_t uid,
 	g_hash_table_foreach(pi->pkg_list, __build_multi_signal, builder);
 
 	gv = g_variant_new("(usa(sss)ss)", uid, sid, builder, key, val);
+	g_variant_builder_unref(builder);
 	if (gv == NULL) {
 		ERR("failed to create GVariant instance");
 		return -1;
@@ -1152,6 +1157,7 @@ API int pkgmgr_installer_send_signals_for_uid(pkgmgr_installer *pi, uid_t uid,
 	data = malloc(data_len);
 	if (data == NULL) {
 		ERR("out of memory");
+		g_free(gv_data);
 		return -1;
 	}
 	ptr = data;
