@@ -675,7 +675,7 @@ API int pkgmgr_client_usr_mount_install_packages(pkgmgr_client *pc,
 	return cb_info->req_id;
 }
 
-API int pkgmgr_cient_mount_install_packages(pkgmgr_client *pc,
+API int pkgmgr_client_mount_install_packages(pkgmgr_client *pc,
 		const char **pkg_paths, int n_pkgs, pkgmgr_handler event_cb,
 		void *data)
 {
