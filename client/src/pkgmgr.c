@@ -400,6 +400,13 @@ API int pkgmgr_client_usr_install_packages(pkgmgr_client *pc,
 		return PKGMGR_R_EINVAL;
 	}
 
+	for (i = 0; i < n_pkgs; i++) {
+		if (access(pkg_paths[i], F_OK) != 0) {
+			ERR("failed to access: %s", pkg_paths[i]);
+			return PKGMGR_R_EINVAL;
+		}
+	}
+
 	pkgs_builder = g_variant_builder_new(G_VARIANT_TYPE("as"));
 	for (i = 0; i < n_pkgs; i++)
 		g_variant_builder_add(pkgs_builder, "s", pkg_paths[i]);
@@ -633,6 +640,13 @@ API int pkgmgr_client_usr_mount_install_packages(pkgmgr_client *pc,
 	if (client->pc_type != PC_REQUEST) {
 		ERR("client->pc_type is not PC_REQUEST");
 		return PKGMGR_R_EINVAL;
+	}
+
+	for (i = 0; i < n_pkgs; i++) {
+		if (access(pkg_paths[i], F_OK) != 0) {
+			ERR("failed to access: %s", pkg_paths[i]);
+			return PKGMGR_R_EINVAL;
+		}
 	}
 
 	pkgs_builder = g_variant_builder_new(G_VARIANT_TYPE("as"));
