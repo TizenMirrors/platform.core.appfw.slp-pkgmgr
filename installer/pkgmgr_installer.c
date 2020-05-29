@@ -62,6 +62,7 @@
 #define OPTVAL_MIGRATE_EXTIMG 1006
 #define OPTVAL_SKIP_CHECK_REFERENCE 1007
 #define OPTVAL_RECOVER_DB 1008
+#define OPTVAL_RECOVERY_CLEANUP 1009
 
 /* Supported options */
 const char *short_opts = "k:l:i:d:c:m:t:o:r:p:s:b:e:M:y:u:w:D:A:qGS";
@@ -93,6 +94,7 @@ const struct option long_opts[] = {
 	{ "migrate-extimg", 1, NULL, OPTVAL_MIGRATE_EXTIMG },
 	{ "skip-check-reference", 0, NULL, OPTVAL_SKIP_CHECK_REFERENCE },
 	{ "recover-db", 1, NULL, OPTVAL_RECOVER_DB },
+	{ "recovery-cleanup", 0, NULL, OPTVAL_RECOVERY_CLEANUP },
 	{ 0, 0, 0, 0 }	/* sentinel */
 };
 
@@ -117,6 +119,7 @@ struct pkgmgr_installer {
 	int debug_mode;
 	int skip_check_reference;
 	int skip_optimization;
+	int recovery_cleanup;
 	GDBusConnection *conn;
 	GHashTable *pkg_list;
 	GList *pkgs;
@@ -497,6 +500,9 @@ pkgmgr_installer_receive_request(pkgmgr_installer *pi,
 			pi->pkgmgr_info = strndup(optarg, MAX_STRLEN);
 			__parse_multiple_pkgs(pi, argc, argv);
 			break;
+		case OPTVAL_RECOVERY_CLEANUP:
+			pi->recovery_cleanup = 1;
+			break;
 		case 'k':	/* session id */
 			if (pi->session_id)
 				free(pi->session_id);
@@ -833,6 +839,12 @@ API int pkgmgr_installer_get_skip_optimization(pkgmgr_installer *pi)
 {
 	CHK_PI_RET(PKGMGR_REQ_INVALID);
 	return pi->skip_optimization;
+}
+
+API int pkgmgr_installer_get_recovery_cleanup(pkgmgr_installer *pi)
+{
+	CHK_PI_RET(PKGMGR_REQ_INVALID);
+	return pi->recovery_cleanup;
 }
 
 API int pkgmgr_installer_send_app_uninstall_signal(pkgmgr_installer *pi,
