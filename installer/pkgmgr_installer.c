@@ -147,6 +147,9 @@ static const char *__get_signal_name(pkgmgr_installer *pi, const char *key,
 		return PKGMGR_INSTALLER_UNINSTALL_EVENT_STR;
 	else if (strcmp(pkg_type, PKGMGR_INSTALLER_CLEAR_CACHE_KEY_STR) == 0)
 		return pkg_type;
+	else if (pi->is_upgrade)
+		return PKGMGR_INSTALLER_UPGRADE_EVENT_STR;
+
 
 	switch (pi->request_type) {
 	case PKGMGR_REQ_INSTALL:
@@ -915,10 +918,6 @@ pkgmgr_installer_send_signal(pkgmgr_installer *pi,
 		return -1;
 	}
 
-	if (strcmp(key, PKGMGR_INSTALLER_START_KEY_STR) == 0 &&
-			strcmp(val, PKGMGR_INSTALLER_UPGRADE_EVENT_STR) == 0)
-		pi->request_type = PKGMGR_REQ_UPGRADE;
-
 	r = __send_signal_for_event(pi, pkg_type, pkgid, NULL, key, val);
 
 	return r;
@@ -951,10 +950,6 @@ API int pkgmgr_installer_send_signal_for_uid(pkgmgr_installer *pi,
 		ERR("connection is NULL");
 		return -1;
 	}
-
-	if (strcmp(key, PKGMGR_INSTALLER_START_KEY_STR) == 0 &&
-			strcmp(val, PKGMGR_INSTALLER_UPGRADE_EVENT_STR) == 0)
-		pi->request_type = PKGMGR_REQ_UPGRADE;
 
 	r = __send_signal_for_event_for_uid(pi, uid, pkg_type, pkgid, NULL,
 			key, val);
