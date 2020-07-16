@@ -407,6 +407,9 @@ API int pkgmgr_installer_free(pkgmgr_installer *pi)
 		g_object_unref(pi->conn);
 	}
 
+	if (pi->pkgs)
+		g_list_free_full(pi->pkgs, free);
+
 	if (pi->pkg_list)
 		g_hash_table_destroy(pi->pkg_list);
 
