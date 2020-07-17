@@ -101,6 +101,7 @@ const struct option long_opts[] = {
 struct pkgmgr_installer {
 	int request_type;
 	int move_type;
+	int is_upgrade;
 	char *pkgmgr_info;
 	char *session_id;
 	char *license_path;
@@ -1240,5 +1241,13 @@ API int pkgmgr_installer_send_signals_for_uid(pkgmgr_installer *pi, uid_t uid,
 
 	free(data);
 
+	return 0;
+}
+
+API int pkgmgr_installer_set_is_upgrade(pkgmgr_installer *pi, int is_upgrade) {
+	if (pi == NULL)
+		return -1;
+
+	pi->is_upgrade = is_upgrade;
 	return 0;
 }

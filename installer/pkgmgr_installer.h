@@ -1209,6 +1209,17 @@ int pkgmgr_installer_send_signals(pkgmgr_installer *pi,
 int pkgmgr_installer_send_signals_for_uid(pkgmgr_installer *pi, uid_t uid,
 		const char *key, const char *val);
 
+/**
+ * @brief	This API sets is_upgrade_flag of given pkgmgr_installer.
+ *
+ *              This API is for package-manager client application.\n
+ *
+ * @param[in]pi				pointer to pkgmgr_installer
+ * @param[in]is_upgrade			is_upgrade flag
+ * @return	0 if success, error code(<0) if fail\n
+*/
+int pkgmgr_installer_set_is_upgrade(pkgmgr_installer *pi, int is_upgrade);
+
 #ifdef __cplusplus
 }
 #endif
