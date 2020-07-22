@@ -211,8 +211,10 @@ static void __signal_handler(GDBusConnection *conn, const gchar *sender_name,
 				continue;
 		} else {
 			signal_type = __get_signal_type(signal_name);
-			if (signal_type < 0 || !(cb_info->status_type & signal_type))
+			if (signal_type < 0 || !(cb_info->status_type & signal_type)) {
+				g_variant_iter_free(iter);
 				return;
+			}
 		}
 
 		/* each cb_data can only has one callback */
@@ -228,6 +230,7 @@ static void __signal_handler(GDBusConnection *conn, const gchar *sender_name,
 
 		/* TODO: unsubscribe request callback */
 	}
+	g_variant_iter_free(iter);
 }
 
 static void __set_signal_list(int event, GList **signal_list)
