@@ -21,6 +21,8 @@
 #ifndef __PKGMGR_INSTALLER_INFO_H__
 #define __PKGMGR_INSTALLER_INFO_H__
 
+#include <sys/types.h>
+
 #include "pkgmgr_installer_type.h"
 
 /**
