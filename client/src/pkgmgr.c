@@ -53,6 +53,8 @@
 #define GLOBAL_USER tzplatform_getuid(TZ_SYS_GLOBALAPP_USER)
 #define REGULAR_USER 5000
 
+static GList *jobs_to_free;
+
 static inline uid_t _getuid(void)
 {
 	uid_t uid = getuid();
@@ -151,19 +153,41 @@ static struct cb_info *__create_size_info_cb_info(
 	return cb_info;
 }
 
-static gboolean __free_cb_info_at_main_thread(gpointer user_data)
+static void __do_free_cb_info(gpointer data)
 {
-	struct cb_info *cb_info = (struct cb_info *)user_data;
+	struct cb_info *cb_info = (struct cb_info *)data;
+
 	g_list_free(cb_info->sid_list);
 	free(cb_info->req_key);
 	free(cb_info);
+}
+
+static void __free_cb_info_cb(gpointer data)
+{
+	g_idle_remove_by_data(data);
+	__do_free_cb_info(data);
+}
+
+__attribute__((destructor)) static void __free_cb_info_at_destructor(void)
+{
+	g_list_free_full(jobs_to_free, __free_cb_info_cb);
+}
+
+static gboolean __free_cb_info_at_idle(gpointer data)
+{
+	GList *tmp;
+
+	tmp = g_list_find(jobs_to_free, data);
+	jobs_to_free = g_list_delete_link(jobs_to_free, tmp);
+	__do_free_cb_info(data);
 
 	return G_SOURCE_REMOVE;
 }
 
 static void __free_cb_info(struct cb_info *cb_info)
 {
-	g_idle_add(__free_cb_info_at_main_thread, cb_info);
+	g_idle_add(__free_cb_info_at_idle, cb_info);
+	jobs_to_free = g_list_append(jobs_to_free, cb_info);
 }
 
 static int __get_size_process(pkgmgr_client *pc, const char *pkgid, uid_t uid,
