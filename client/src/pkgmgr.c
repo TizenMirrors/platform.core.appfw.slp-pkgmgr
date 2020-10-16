@@ -30,6 +30,7 @@
 #include <sys/wait.h>
 #include <sys/time.h>
 #include <unzip.h>
+#include <pthread.h>
 
 #include <glib.h>
 
@@ -54,6 +55,7 @@
 #define REGULAR_USER 5000
 
 static GList *jobs_to_free;
+static pthread_mutex_t __mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static inline uid_t _getuid(void)
 {
@@ -153,6 +155,26 @@ static struct cb_info *__create_size_info_cb_info(
 	return cb_info;
 }
 
+static int __jobs_to_free_add(gpointer data)
+{
+	pthread_mutex_lock(&__mutex);
+	if (g_list_find(jobs_to_free, data)) {
+		pthread_mutex_unlock(&__mutex);
+		return -1;
+	}
+
+	jobs_to_free = g_list_append(jobs_to_free, data);
+	pthread_mutex_unlock(&__mutex);
+	return 0;
+}
+
+static void __jobs_to_free_remove(gpointer data)
+{
+	pthread_mutex_lock(&__mutex);
+	jobs_to_free = g_list_remove(jobs_to_free, data);
+	pthread_mutex_unlock(&__mutex);
+}
+
 static void __do_free_cb_info(gpointer data)
 {
 	struct cb_info *cb_info = (struct cb_info *)data;
@@ -170,15 +192,14 @@ static void __free_cb_info_cb(gpointer data)
 
 __attribute__((destructor)) static void __free_cb_info_at_destructor(void)
 {
+	pthread_mutex_lock(&__mutex);
 	g_list_free_full(jobs_to_free, __free_cb_info_cb);
+	pthread_mutex_unlock(&__mutex);
 }
 
 static gboolean __free_cb_info_at_idle(gpointer data)
 {
-	GList *tmp;
-
-	tmp = g_list_find(jobs_to_free, data);
-	jobs_to_free = g_list_delete_link(jobs_to_free, tmp);
+	__jobs_to_free_remove(data);
 	__do_free_cb_info(data);
 
 	return G_SOURCE_REMOVE;
@@ -186,8 +207,10 @@ static gboolean __free_cb_info_at_idle(gpointer data)
 
 static void __free_cb_info(struct cb_info *cb_info)
 {
+	if (__jobs_to_free_add(cb_info) < 0)
+		return;
+
 	g_idle_add(__free_cb_info_at_idle, cb_info);
-	jobs_to_free = g_list_append(jobs_to_free, cb_info);
 }
 
 static int __get_size_process(pkgmgr_client *pc, const char *pkgid, uid_t uid,
