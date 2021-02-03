@@ -14,7 +14,7 @@ foreach(flag ${installer_pkgs_CFLAGS})
 	set(installer_pkgs_CFLAGS_str "${installer_pkgs_CFLAGS_str} ${flag}")
 endforeach()
 
-PKG_CHECK_MODULES(AGENT_DEPS REQUIRED glib-2.0 gio-2.0 dlog libsystemd-daemon)
+PKG_CHECK_MODULES(AGENT_DEPS REQUIRED glib-2.0 gio-2.0 dlog libsystemd)
 FOREACH(FLAG ${AGENT_DEPS_CFLAGS})
 	SET(AGENT_CFLAGS "${AGENT_CFLAGS} ${FLAG}")
 ENDFOREACH()

@@ -30,7 +30,7 @@ BuildRequires:  pkgconfig(libtzplatform-config)
 BuildRequires:  pkgconfig(xdgmime)
 BuildRequires:  pkgconfig(db-util)
 BuildRequires:  pkgconfig(libsmack)
-BuildRequires:  pkgconfig(libsystemd-daemon)
+BuildRequires:  pkgconfig(libsystemd)
 BuildRequires:  pkgconfig(minizip)
 BuildRequires:  pkgmgr-info-parser-devel
 BuildRequires:  pkgmgr-info-parser
