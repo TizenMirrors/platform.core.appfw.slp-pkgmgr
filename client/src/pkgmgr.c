@@ -67,11 +67,25 @@ static inline uid_t _getuid(void)
 		return uid;
 }
 
-static int _get_request_id()
+static int _get_internal_request_id()
 {
 	static int internal_req_id = 1;
 
 	return internal_req_id++;
+}
+
+static char *_generate_request_id(void)
+{
+	struct timeval tv;
+	long curtime;
+	char buf[BUFMAX];
+
+	gettimeofday(&tv, NULL);
+	curtime = tv.tv_sec * 1000000 + tv.tv_usec;
+
+	snprintf(buf, sizeof(buf), "%d_%ld", getpid(), curtime);
+
+	return strdup(buf);
 }
 
 static struct cb_info *__create_event_cb_info(struct pkgmgr_client_t *client,
@@ -87,7 +101,7 @@ static struct cb_info *__create_event_cb_info(struct pkgmgr_client_t *client,
 	cb_info->client = client;
 	cb_info->event_cb = event_cb;
 	cb_info->data = data;
-	cb_info->req_id = _get_request_id();
+	cb_info->req_id = _get_internal_request_id();
 	if (req_key != NULL) {
 		cb_info->req_key = strdup(req_key);
 		if (cb_info->req_key == NULL) {
@@ -114,7 +128,7 @@ static struct cb_info *__create_app_event_cb_info(
 	cb_info->client = client;
 	cb_info->app_event_cb = app_event_cb;
 	cb_info->data = data;
-	cb_info->req_id = _get_request_id();
+	cb_info->req_id = _get_internal_request_id();
 	if (req_key != NULL) {
 		cb_info->req_key = strdup(req_key);
 		if (cb_info->req_key == NULL) {
@@ -142,7 +156,7 @@ static struct cb_info *__create_size_info_cb_info(
 	cb_info->client = client;
 	cb_info->size_info_cb = size_info_cb;
 	cb_info->data = data;
-	cb_info->req_id = _get_request_id();
+	cb_info->req_id = _get_internal_request_id();
 	if (req_key != NULL) {
 		cb_info->req_key = strdup(req_key);
 		if (cb_info->req_key == NULL) {
@@ -436,6 +450,7 @@ API int pkgmgr_client_usr_install_packages(pkgmgr_client *pc,
 	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
 	struct cb_info *cb_info;
 	int i;
+	char *request_id = NULL;
 
 	if (pc == NULL || pkg_paths == NULL || n_pkgs < 1) {
 		ERR("invalid parameter");
@@ -468,8 +483,12 @@ API int pkgmgr_client_usr_install_packages(pkgmgr_client *pc,
 	args = g_variant_new("as", args_builder);
 	g_variant_builder_unref(args_builder);
 
+	request_id = _generate_request_id();
 	ret = pkgmgr_client_connection_send_request(client, "install_pkgs",
-			g_variant_new("(u@as@as)", uid, pkgs, args), &result);
+			g_variant_new("(u@as@ass)", uid, pkgs, args,
+					request_id),
+			&result);
+	free(request_id);
 	if (ret != PKGMGR_R_OK) {
 		ERR("request failed: %d", ret);
 		return ret;
@@ -521,6 +540,7 @@ API int pkgmgr_client_usr_install(pkgmgr_client *pc, const char *pkg_type,
 	GVariant *args = NULL;
 	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
 	struct cb_info *cb_info;
+	char *request_id = NULL;
 
 	if (pc == NULL || pkg_path == NULL) {
 		ERR("invalid parameter");
@@ -560,10 +580,12 @@ API int pkgmgr_client_usr_install(pkgmgr_client *pc, const char *pkg_type,
 	args = g_variant_new("as", builder);
 	g_variant_builder_unref(builder);
 
+	request_id = _generate_request_id();
 	ret = pkgmgr_client_connection_send_request(client, "install",
-			g_variant_new("(uss@as)", uid, pkg_type ? pkg_type : "",
-				pkg_path, args),
+			g_variant_new("(uss@ass)", uid, pkg_type ? pkg_type : "",
+				pkg_path, args, request_id),
 			&result);
+	free(request_id);
 	if (ret != PKGMGR_R_OK) {
 		ERR("request failed: %d", ret);
 		return ret;
@@ -591,7 +613,6 @@ API int pkgmgr_client_usr_install(pkgmgr_client *pc, const char *pkg_type,
 		return ret;
 	}
 	client->cb_info_list = g_list_append(client->cb_info_list, cb_info);
-
 	return cb_info->req_id;
 }
 
@@ -678,6 +699,7 @@ API int pkgmgr_client_usr_mount_install_packages(pkgmgr_client *pc,
 	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
 	struct cb_info *cb_info;
 	int i;
+	char *request_id = NULL;
 
 	if (pc == NULL || pkg_paths == NULL || n_pkgs < 1) {
 		ERR("invalid parameter");
@@ -702,9 +724,12 @@ API int pkgmgr_client_usr_mount_install_packages(pkgmgr_client *pc,
 	pkgs = g_variant_new("as", pkgs_builder);
 	g_variant_builder_unref(pkgs_builder);
 
+	request_id = _generate_request_id();
 	ret = pkgmgr_client_connection_send_request(client,
 			"mount_install_pkgs",
-			g_variant_new("(u@as)", uid, pkgs), &result);
+			g_variant_new("(u@ass)", uid, pkgs, request_id),
+			&result);
+	free(request_id);
 	if (ret != PKGMGR_R_OK) {
 		ERR("request failed: %d", ret);
 		return ret;
@@ -756,6 +781,7 @@ API int pkgmgr_client_usr_mount_install(pkgmgr_client *pc, const char *pkg_type,
 	GVariant *args = NULL;
 	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
 	struct cb_info *cb_info;
+	char *request_id = NULL;
 
 	if (pc == NULL || pkg_path == NULL) {
 		ERR("invalid parameter");
@@ -791,10 +817,13 @@ API int pkgmgr_client_usr_mount_install(pkgmgr_client *pc, const char *pkg_type,
 	args = g_variant_new("as", builder);
 	g_variant_builder_unref(builder);
 
+	request_id = _generate_request_id();
 	ret = pkgmgr_client_connection_send_request(client, "mount_install",
-			g_variant_new("(uss@as)", uid, pkg_type ? pkg_type : "",
-				pkg_path, args),
+			g_variant_new("(uss@ass)", uid,
+					pkg_type ? pkg_type : "", pkg_path,
+					args, request_id),
 			&result);
+	free(request_id);
 	if (ret != PKGMGR_R_OK) {
 		ERR("request failed: %d", ret);
 		return ret;
