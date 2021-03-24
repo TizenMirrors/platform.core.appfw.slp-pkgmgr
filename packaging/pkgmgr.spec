@@ -113,6 +113,8 @@ mkdir -p %{buildroot}%{_sysconfdir}/opt/upgrade
 
 touch  %{buildroot}%{_sysconfdir}/package-manager/backend/default
 chmod 755 %{buildroot}%{_sysconfdir}/package-manager/backend/default
+touch  %{buildroot}%{_sysconfdir}/package-manager/backend/pkgmgr
+chmod 755 %{buildroot}%{_sysconfdir}/package-manager/backend/pkgmgr
 touch  %{buildroot}%{_sysconfdir}/package-manager/backend/pkgtool
 chmod 755 %{buildroot}%{_sysconfdir}/package-manager/backend/pkgtool
 
