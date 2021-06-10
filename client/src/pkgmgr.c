@@ -319,6 +319,7 @@ static int __check_app_process(pkgmgr_request_service_type service_type,
 
 	if (ret != PKGMGR_R_OK) {
 		ERR("request failed: %d", ret);
+		pkgmgrinfo_pkginfo_destroy_pkginfo(handle);
 		return ret;
 	}
 
@@ -326,6 +327,7 @@ static int __check_app_process(pkgmgr_request_service_type service_type,
 	g_variant_unref(result);
 	if (ret != PKGMGR_R_OK) {
 		ERR("request failed, ret=%d", ret);
+		pkgmgrinfo_pkginfo_destroy_pkginfo(handle);
 		return ret;
 	}
 
