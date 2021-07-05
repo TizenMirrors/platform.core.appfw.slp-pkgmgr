@@ -729,9 +729,9 @@ int pkgmgr_client_activate_global_app_for_uid(pkgmgr_client *pc, const char *app
  * @retval	PKGMGR_R_ECOMM	communication error
 */
 int pkgmgr_client_clear_user_data(pkgmgr_client *pc, const char *pkg_type,
-				const char *appid, pkgmgr_mode mode);
+				const char *pkgid, pkgmgr_mode mode);
 int pkgmgr_client_usr_clear_user_data(pkgmgr_client *pc, const char *pkg_type,
-				const char *appid, pkgmgr_mode mode, uid_t uid);
+				const char *pkgid, pkgmgr_mode mode, uid_t uid);
 /**
  * @brief	This API set status type to listen for the pkgmgr's broadcasting
  *
@@ -1206,4 +1206,3 @@ int pkgmgr_client_usr_migrate_external_image(pkgmgr_client *pc, const char *pkgi
  * @}
  * @}
  */
-

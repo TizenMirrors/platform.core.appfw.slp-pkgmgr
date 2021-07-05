@@ -1735,14 +1735,14 @@ API int pkgmgr_client_deactivate_global_app_for_uid(pkgmgr_client *pc,
 }
 
 API int pkgmgr_client_usr_clear_user_data(pkgmgr_client *pc,
-		const char *pkg_type, const char *appid, pkgmgr_mode mode,
+		const char *pkg_type, const char *pkgid, pkgmgr_mode mode,
 		uid_t uid)
 {
 	GVariant *result;
 	int ret;
 	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
 
-	if (pc == NULL || appid == NULL || uid == GLOBAL_USER) {
+	if (pc == NULL || pkgid == NULL || uid == GLOBAL_USER) {
 		ERR("invalid parameter");
 		return PKGMGR_R_EINVAL;
 	}
@@ -1753,7 +1753,7 @@ API int pkgmgr_client_usr_clear_user_data(pkgmgr_client *pc,
 	}
 
 	ret = pkgmgr_client_connection_send_request(client, "cleardata",
-			g_variant_new("(us)", uid, appid), &result);
+			g_variant_new("(us)", uid, pkgid), &result);
 	if (ret != PKGMGR_R_OK) {
 		ERR("request failed: %d", ret);
 		return ret;
@@ -1766,9 +1766,9 @@ API int pkgmgr_client_usr_clear_user_data(pkgmgr_client *pc,
 }
 
 API int pkgmgr_client_clear_user_data(pkgmgr_client *pc, const char *pkg_type,
-		const char *appid, pkgmgr_mode mode)
+		const char *pkgid, pkgmgr_mode mode)
 {
-	return pkgmgr_client_usr_clear_user_data(pc, pkg_type, appid, mode,
+	return pkgmgr_client_usr_clear_user_data(pc, pkg_type, pkgid, mode,
 			_getuid());
 }
 
