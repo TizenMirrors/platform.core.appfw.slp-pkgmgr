@@ -141,6 +141,36 @@ static struct cb_info *__create_app_event_cb_info(
 	return cb_info;
 }
 
+static struct cb_info *__create_res_request_cb_info(
+		struct pkgmgr_client_t *client,
+		pkgmgr_res_request_cb res_request_cb,
+		void *data, const char *req_key)
+{
+	struct cb_info *cb_info;
+
+	cb_info = calloc(1, sizeof(struct cb_info));
+	if (cb_info == NULL) {
+		ERR("out of memory");
+		return NULL;
+	}
+
+	cb_info->client = client;
+	cb_info->res_request_cb = res_request_cb;
+	cb_info->data = data;
+	cb_info->req_id = _get_internal_request_id();
+	if (req_key == NULL)
+		return cb_info;
+
+	cb_info->req_key = strdup(req_key);
+	if (cb_info->req_key == NULL) {
+		ERR("out of memory");
+		free(cb_info);
+		return NULL;
+	}
+
+	return cb_info;
+}
+
 static struct cb_info *__create_size_info_cb_info(
 		struct pkgmgr_client_t *client,
 		pkgmgr_pkg_size_info_receive_cb size_info_cb,
@@ -383,6 +413,10 @@ API int pkgmgr_client_free(pkgmgr_client *pc)
 	pkgmgr_client_connection_disconnect(client);
 	if (client->tep_path)
 		free(client->tep_path);
+	if (client->res_copy_builder)
+		g_variant_builder_unref(client->res_copy_builder);
+	if (client->res_remove_builder)
+		g_variant_builder_unref(client->res_remove_builder);
 	free(client);
 
 	return PKGMGR_R_OK;
@@ -2725,4 +2759,206 @@ API int pkgmgr_client_usr_migrate_external_image(pkgmgr_client *pc,
 	g_variant_unref(result);
 
 	return ret;
+}
+
+API int pkgmgr_client_add_res_copy_path(pkgmgr_client *pc,
+		const char *src_path, const char *dest_path)
+{
+	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
+
+	if (pc == NULL || src_path == NULL) {
+		ERR("invalid parameter");
+		return PKGMGR_R_EINVAL;
+	}
+
+	if (client->res_copy_builder == NULL) {
+		client->res_copy_builder =
+				g_variant_builder_new(G_VARIANT_TYPE("a(ss)"));
+		if (client->res_copy_builder == NULL) {
+			ERR("out of memory");
+			return PKGMGR_R_ENOMEM;
+		}
+	}
+
+	g_variant_builder_add(client->res_copy_builder, "(ss)",
+			src_path, dest_path ? dest_path : "");
+
+	return PKGMGR_R_OK;
+}
+
+API int pkgmgr_client_res_copy(pkgmgr_client *pc,
+		pkgmgr_res_request_cb event_cb, void *user_data)
+{
+	GVariant *result;
+	int ret;
+	char *req_key = NULL;
+	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
+	struct cb_info *cb_info;
+
+	if (pc == NULL || event_cb == NULL) {
+		ERR("invalid parameter");
+		return PKGMGR_R_EINVAL;
+	}
+
+	ret = pkgmgr_client_connection_send_request(client,
+			"res_copy",
+			g_variant_new("(a(ss))",
+			client->res_copy_builder), &result);
+	if (ret != PKGMGR_R_OK) {
+		ERR("request failed: %d", ret);
+		return ret;
+	}
+
+	g_variant_get(result, "(i&s)", &ret, &req_key);
+	if (req_key == NULL) {
+		g_variant_unref(result);
+		return PKGMGR_R_ECOMM;
+	}
+	if (ret != PKGMGR_R_OK) {
+		g_variant_unref(result);
+		return ret;
+	}
+
+	cb_info = __create_res_request_cb_info(client,
+			event_cb, user_data, req_key);
+	g_variant_unref(result);
+	if (cb_info == NULL)
+		return PKGMGR_R_ENOMEM;
+
+	ret = pkgmgr_client_connection_set_callback(client, cb_info);
+	if (ret != PKGMGR_R_OK) {
+		__free_cb_info(cb_info);
+		return ret;
+	}
+	client->cb_info_list = g_list_append(client->cb_info_list, cb_info);
+
+	return cb_info->req_id;
+}
+
+API int pkgmgr_client_add_res_remove_path(pkgmgr_client *pc,
+		const char *res_path)
+{
+	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
+
+	if (pc == NULL || res_path == NULL) {
+		ERR("invalid parameter");
+		return PKGMGR_R_EINVAL;
+	}
+
+	if (client->res_remove_builder == NULL) {
+		client->res_remove_builder =
+				g_variant_builder_new(G_VARIANT_TYPE("as"));
+		if (client->res_remove_builder == NULL) {
+			ERR("out of memory");
+			return PKGMGR_R_ENOMEM;
+		}
+	}
+
+	g_variant_builder_add(client->res_remove_builder, "s", res_path);
+
+	return PKGMGR_R_OK;
+}
+
+API int pkgmgr_client_res_remove(pkgmgr_client *pc,
+		pkgmgr_res_request_cb event_cb, void *user_data)
+{
+	GVariant *result;
+	int ret;
+	char *req_key = NULL;
+	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
+	struct cb_info *cb_info;
+
+	if (pc == NULL || event_cb == NULL) {
+		ERR("invalid parameter");
+		return PKGMGR_R_EINVAL;
+	}
+
+	ret = pkgmgr_client_connection_send_request(client,
+			"res_remove",
+			g_variant_new("(as)",
+			client->res_remove_builder), &result);
+	if (ret != PKGMGR_R_OK) {
+		ERR("request failed: %d", ret);
+		return ret;
+	}
+
+	g_variant_get(result, "(i&s)", &ret, &req_key);
+	if (req_key == NULL) {
+		g_variant_unref(result);
+		return PKGMGR_R_ECOMM;
+	}
+	if (ret != PKGMGR_R_OK) {
+		g_variant_unref(result);
+		return ret;
+	}
+
+	cb_info = __create_res_request_cb_info(client,
+			event_cb, user_data, req_key);
+	g_variant_unref(result);
+	if (cb_info == NULL)
+		return PKGMGR_R_ENOMEM;
+
+	ret = pkgmgr_client_connection_set_callback(client, cb_info);
+	if (ret != PKGMGR_R_OK) {
+		__free_cb_info(cb_info);
+		return ret;
+	}
+	client->cb_info_list = g_list_append(client->cb_info_list, cb_info);
+
+	return cb_info->req_id;
+}
+
+API int pkgmgr_client_res_uninstall(pkgmgr_client *pc, const char *pkgid,
+		pkgmgr_res_request_cb event_cb, void *user_data)
+{
+	return pkgmgr_client_res_usr_uninstall(pc, pkgid, event_cb,
+			user_data, _getuid());
+}
+
+API int pkgmgr_client_res_usr_uninstall(pkgmgr_client *pc, const char *pkgid,
+		pkgmgr_res_request_cb event_cb, void *user_data, uid_t uid)
+{
+	GVariant *result;
+	int ret = PKGMGR_R_ECOMM;
+	char *req_key = NULL;
+	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
+	struct cb_info *cb_info;
+
+	if (pc == NULL || pkgid == NULL || event_cb == NULL) {
+		ERR("invalid parameter");
+		return PKGMGR_R_EINVAL;
+	}
+
+	ret = pkgmgr_client_connection_send_request(client,
+			"res_uninstall",
+			g_variant_new("(us)", uid, pkgid), &result);
+	if (ret != PKGMGR_R_OK) {
+		ERR("request failed: %d", ret);
+		return ret;
+	}
+
+	g_variant_get(result, "(i&s)", &ret, &req_key);
+	if (req_key == NULL) {
+		g_variant_unref(result);
+		return PKGMGR_R_ECOMM;
+	}
+	if (ret != PKGMGR_R_OK) {
+		g_variant_unref(result);
+		return ret;
+	}
+
+	cb_info = __create_res_request_cb_info(client,
+			event_cb, user_data, req_key);
+	g_variant_unref(result);
+	if (cb_info == NULL)
+		return PKGMGR_R_ENOMEM;
+
+	ret = pkgmgr_client_connection_set_callback(client, cb_info);
+	if (ret != PKGMGR_R_OK) {
+		__free_cb_info(cb_info);
+		return ret;
+	}
+	client->cb_info_list = g_list_append(client->cb_info_list, cb_info);
+
+	return cb_info->req_id;
 }

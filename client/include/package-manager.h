@@ -156,6 +156,7 @@ typedef enum _pkgmgr_return_val {
 
 typedef void pkgmgr_client;
 typedef void pkgmgr_info;
+typedef void *pkgmgr_res_cb_info_h;
 
 typedef struct {
 	long long data_size;
@@ -194,6 +195,10 @@ typedef void (*pkgmgr_pkg_size_info_receive_cb)(pkgmgr_client *pc, const char *p
 
 typedef void (*pkgmgr_total_pkg_size_info_receive_cb)(pkgmgr_client *pc,
 		const pkg_size_info_t *size_info, void *user_data);
+
+typedef void (*pkgmgr_res_request_cb)(uid_t target_uid, int req_id,
+		const char *pkgid, const char *request_type, const char *status,
+		pkgmgr_res_cb_info_h handle, void *user_data);
 
 typedef enum {
 	PC_REQUEST = 0,
@@ -1194,6 +1199,88 @@ int pkgmgr_client_set_skip_optimization(pkgmgr_client *pc, bool skip_optimizatio
  * @retval	PKGMGR_R_EINVAL	invalid argument
  */
 int pkgmgr_client_usr_migrate_external_image(pkgmgr_client *pc, const char *pkgid, uid_t uid);
+
+/**
+ * @brief	Add resource path to copy
+ *
+ * This API adds path for resource copy request.\n
+ *
+ * @param[in]	pc		The pointer to pkgmgr_client instance
+ * @param[in]	src_path	Path of a resource that client want to copy
+ * @param[in]	dest_path	Destination path to copy source path, if dest_path is null it will be set to root path of the package's sharing resource directory
+ * @return	0 if success, error code(<0) if fail\n
+ * @retval	PKGMGR_R_OK	success
+ * @retval	PKGMGR_R_EINVAL	invalid argument
+ * @retval	PKGMGR_R_ENOMEM	out of memory
+ */
+int pkgmgr_client_add_res_copy_path(pkgmgr_client *pc, const char *src_path, const char *dest_path);
+
+/**
+ * @brief	This API copy resources.
+ *
+ * This API is for package-manager client application.\n
+ *
+ * @param[in]	pc		pkgmgr_client
+ * @param[in]	event_cb	user callback
+ * @param[in]	data		user data
+ * @return	request_id (>0) if success, error code(<0) if fail\n
+ * @retval	PKGMGR_R_OK	success
+ * @retval	PKGMGR_R_ECOMM	communication error
+ * @retval	PKGMGR_R_EINVAL	invalid argument
+ * @retval	PKGMGR_R_ENOMEM	out of memory
+ * @retval	PKGMGR_R_EPRIV	privilege denied
+*/
+int pkgmgr_client_res_copy(pkgmgr_client *pc, pkgmgr_res_request_cb event_cb, void *user_data);
+
+/**
+ * @brief	Add resource path to remove
+ *
+ * This API adds path for resource remove request.\n
+ *
+ * @param[in]	pc		The pointer to pkgmgr_client instance
+ * @param[in]	res_path	Path of a copied resource that client want to remove
+ * @return	0 if success, error code(<0) if fail\n
+ * @retval	PKGMGR_R_OK	success
+ * @retval	PKGMGR_R_EINVAL	invalid argument
+ * @retval	PKGMGR_R_ENOMEM	out of memory
+ */
+int pkgmgr_client_add_res_remove_path(pkgmgr_client *pc, const char *res_path);
+
+/**
+ * @brief	This API removes resources.
+ *
+ * This API is for package-manager client application.\n
+ *
+ * @param[in]	pc		pkgmgr_client
+ * @param[in]	event_cb	user callback
+ * @param[in]	data		user data
+ * @return	request_id (>0) if success, error code(<0) if fail\n
+ * @retval	PKGMGR_R_OK	success
+ * @retval	PKGMGR_R_ECOMM	communication error
+ * @retval	PKGMGR_R_EINVAL	invalid argument
+ * @retval	PKGMGR_R_ENOMEM	out of memory
+ * @retval	PKGMGR_R_EPRIV	privilege denied
+*/
+int pkgmgr_client_res_remove(pkgmgr_client *pc, pkgmgr_res_request_cb event_cb, void *user_data);
+
+/**
+ * @brief	This API uninstall copied resources of the package.
+ *
+ * This API is for package-manager client application.\n
+ *
+ * @param[in]	pc		pkgmgr_client
+ * @param[in]	pkgid		package id
+ * @param[in]	event_cb	user callback
+ * @param[in]	user_data	user data
+ * @return	request_id (>0) if success, error code(<0) if fail\n
+ * @retval	PKGMGR_R_OK	success
+ * @retval	PKGMGR_R_ECOMM	communication error
+ * @retval	PKGMGR_R_EINVAL	invalid argument
+ * @retval	PKGMGR_R_ENOMEM	out of memory
+ * @retval	PKGMGR_R_EPRIV	privilege denied
+ */
+int pkgmgr_client_res_uninstall(pkgmgr_client *pc, const char *pkgid, pkgmgr_res_request_cb event_cb, void *user_data);
+int pkgmgr_client_res_usr_uninstall(pkgmgr_client *pc, const char *pkgid, pkgmgr_res_request_cb event_cb, void *user_data, uid_t uid);
 
 /** @} */
 

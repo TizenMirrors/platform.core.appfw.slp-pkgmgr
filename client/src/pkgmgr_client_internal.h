@@ -41,6 +41,7 @@ struct cb_info {
 	pkgmgr_handler event_cb;
 	pkgmgr_app_handler app_event_cb;
 	pkgmgr_pkg_size_info_receive_cb size_info_cb;
+	pkgmgr_res_request_cb res_request_cb;
 	void *data;
 	struct pkgmgr_client_t *client;
 	GList *sid_list;
@@ -51,6 +52,8 @@ struct pkgmgr_client_t {
 	int status_type;
 	GDBusConnection *conn;
 	GList *cb_info_list;
+	GVariantBuilder *res_copy_builder;
+	GVariantBuilder *res_remove_builder;
 	char *tep_path;
 	bool tep_move;
 	bool debug_mode;
