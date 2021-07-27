@@ -225,8 +225,12 @@ static void __signal_handler(GDBusConnection *conn, const gchar *sender_name,
 			cb_info->app_event_cb(target_uid, cb_info->req_id,
 					pkg_type, pkgid, appid, key, val, NULL,
 					cb_info->data);
-		} else if (cb_info->size_info_cb)
+		} else if (cb_info->size_info_cb) {
 			__handle_size_info_callback(cb_info, pkgid, val);
+		} else if (cb_info->res_request_cb) {
+			// TODO(ilho159.kim):
+			//Need to handle resource copy request's event callback
+		}
 
 		/* TODO: unsubscribe request callback */
 	}
