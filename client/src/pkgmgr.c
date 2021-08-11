@@ -141,9 +141,9 @@ static struct cb_info *__create_app_event_cb_info(
 	return cb_info;
 }
 
-static struct cb_info *__create_res_request_cb_info(
+static struct cb_info *__create_res_copy_event_cb_info(
 		struct pkgmgr_client_t *client,
-		pkgmgr_res_request_cb res_request_cb,
+		pkgmgr_res_copy_handler res_copy_event_cb,
 		void *data, const char *req_key)
 {
 	struct cb_info *cb_info;
@@ -155,7 +155,7 @@ static struct cb_info *__create_res_request_cb_info(
 	}
 
 	cb_info->client = client;
-	cb_info->res_request_cb = res_request_cb;
+	cb_info->res_copy_event_cb = res_copy_event_cb;
 	cb_info->data = data;
 	cb_info->req_id = _get_internal_request_id();
 	if (req_key == NULL)
@@ -2785,7 +2785,7 @@ API int pkgmgr_client_add_res_copy_path(pkgmgr_client *pc,
 }
 
 API int pkgmgr_client_res_copy(pkgmgr_client *pc,
-		pkgmgr_res_request_cb event_cb, void *user_data)
+		pkgmgr_res_copy_handler event_cb, void *user_data)
 {
 	GVariant *result;
 	int ret;
@@ -2817,7 +2817,7 @@ API int pkgmgr_client_res_copy(pkgmgr_client *pc,
 		return ret;
 	}
 
-	cb_info = __create_res_request_cb_info(client,
+	cb_info = __create_res_copy_event_cb_info(client,
 			event_cb, user_data, req_key);
 	g_variant_unref(result);
 	if (cb_info == NULL)
@@ -2858,7 +2858,7 @@ API int pkgmgr_client_add_res_remove_path(pkgmgr_client *pc,
 }
 
 API int pkgmgr_client_res_remove(pkgmgr_client *pc,
-		pkgmgr_res_request_cb event_cb, void *user_data)
+		pkgmgr_res_copy_handler event_cb, void *user_data)
 {
 	GVariant *result;
 	int ret;
@@ -2890,7 +2890,7 @@ API int pkgmgr_client_res_remove(pkgmgr_client *pc,
 		return ret;
 	}
 
-	cb_info = __create_res_request_cb_info(client,
+	cb_info = __create_res_copy_event_cb_info(client,
 			event_cb, user_data, req_key);
 	g_variant_unref(result);
 	if (cb_info == NULL)
@@ -2907,14 +2907,14 @@ API int pkgmgr_client_res_remove(pkgmgr_client *pc,
 }
 
 API int pkgmgr_client_res_uninstall(pkgmgr_client *pc, const char *pkgid,
-		pkgmgr_res_request_cb event_cb, void *user_data)
+		pkgmgr_res_copy_handler event_cb, void *user_data)
 {
 	return pkgmgr_client_res_usr_uninstall(pc, pkgid, event_cb,
 			user_data, _getuid());
 }
 
 API int pkgmgr_client_res_usr_uninstall(pkgmgr_client *pc, const char *pkgid,
-		pkgmgr_res_request_cb event_cb, void *user_data, uid_t uid)
+		pkgmgr_res_copy_handler event_cb, void *user_data, uid_t uid)
 {
 	GVariant *result;
 	int ret = PKGMGR_R_ECOMM;
@@ -2945,7 +2945,7 @@ API int pkgmgr_client_res_usr_uninstall(pkgmgr_client *pc, const char *pkgid,
 		return ret;
 	}
 
-	cb_info = __create_res_request_cb_info(client,
+	cb_info = __create_res_copy_event_cb_info(client,
 			event_cb, user_data, req_key);
 	g_variant_unref(result);
 	if (cb_info == NULL)

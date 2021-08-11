@@ -187,10 +187,8 @@ static void __handle_size_info_callback(struct cb_info *cb_info,
 	}
 }
 
-static void __signal_handler(GDBusConnection *conn, const gchar *sender_name,
-		const gchar *object_path, const gchar *interface_name,
-		const gchar *signal_name, GVariant *parameters,
-		gpointer user_data)
+static void __handle_pkg_signal(const gchar *signal_name,
+		GVariant *parameters, gpointer user_data)
 {
 	uid_t target_uid;
 	char *req_id;
@@ -227,14 +225,53 @@ static void __signal_handler(GDBusConnection *conn, const gchar *sender_name,
 					cb_info->data);
 		} else if (cb_info->size_info_cb) {
 			__handle_size_info_callback(cb_info, pkgid, val);
-		} else if (cb_info->res_request_cb) {
-			// TODO(ilho159.kim):
-			//Need to handle resource copy request's event callback
 		}
 
 		/* TODO: unsubscribe request callback */
 	}
 	g_variant_iter_free(iter);
+}
+
+static void __handle_res_copy_event_signal(const gchar *signal_name,
+		GVariant *parameters, gpointer user_data)
+{
+	uid_t target_uid;
+	char *req_id;
+	char *pkgid = NULL;
+	char *status = NULL;
+	struct cb_info *cb_info = (struct cb_info *)user_data;
+	int signal_type;
+
+	if (!cb_info->res_copy_event_cb)
+		return;
+
+	g_variant_get(parameters, "(u&s&s&s)", &target_uid, &req_id, &pkgid, &status);
+	if (cb_info->req_key) {
+		if (strcmp(cb_info->req_key, req_id) != 0)
+			return;
+	} else {
+		signal_type = __get_signal_type(signal_name);
+		if (signal_type < 0 || !(cb_info->status_type & signal_type))
+			return;
+	}
+
+	cb_info->res_copy_event_cb(target_uid, cb_info->req_id, pkgid, signal_name,
+			status, NULL, cb_info->data);
+}
+
+static void __signal_handler(GDBusConnection *conn, const gchar *sender_name,
+		const gchar *object_path, const gchar *interface_name,
+		const gchar *signal_name, GVariant *parameters,
+		gpointer user_data)
+{
+	if (g_variant_type_equal(G_VARIANT_TYPE("(usa(sss)ss)"),
+			g_variant_get_type(parameters))) {
+		__handle_pkg_signal(signal_name, parameters, user_data);
+	} else if (!strcmp(signal_name, PKGMGR_INSTALLER_RES_COPY_EVENT_STR) ||
+			!strcmp(signal_name, PKGMGR_INSTALLER_RES_REMOVE_EVENT_STR) ||
+			!strcmp(signal_name, PKGMGR_INSTALLER_RES_UNINSTALL_EVENT_STR)) {
+		__handle_res_copy_event_signal(signal_name, parameters, user_data);
+	}
 }
 
 static void __set_signal_list(int event, GList **signal_list)
