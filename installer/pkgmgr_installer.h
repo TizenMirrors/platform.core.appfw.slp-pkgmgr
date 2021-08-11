@@ -26,6 +26,7 @@
 
 #include <sys/types.h>
 
+#include "package-manager.h"
 #include "pkgmgr_installer_type.h"
 
 /**
@@ -1219,6 +1220,61 @@ int pkgmgr_installer_send_signals_for_uid(pkgmgr_installer *pi, uid_t uid,
  * @return	0 if success, error code(<0) if fail\n
 */
 int pkgmgr_installer_set_is_upgrade(pkgmgr_installer *pi, int is_upgrade);
+
+/**
+	@brief		Send a signal of the resource copy event status
+	@pre		None
+	@post		None
+	@see		None
+	@param[in]	pi		pkgmgr_installer object
+	@param[in]	pkgid		package id
+	@param[in]	status		event status
+	@param[in]	event_info	event info handle
+	@return		Operation result
+	@retval		0 on success, otherwise -1
+	@code
+#include <pkgmgr_installer.h>
+void send_res_copy_singal(uid_t uid, int request_type, const char *session_id,
+		const char *pkgid, const char *status,
+		pkgmgr_res_event_info_h event_info)
+{
+	pkgmgr_installer *pi;
+	int r = 0;
+
+	pi = pkgmgr_installer_new();
+	if(!pi) return -1;
+
+	if (pkgmgr_installer_set_uid(pi, uid))
+		goto CLEANUP_RET;
+	if (pkgmgr_installer_set_request_type(pi, request_type))
+		goto CLEANUP_RET;
+	if ((pkgmgr_installer_set_session_id(pi, session_id))
+		goto CLEANUP_RET;
+	pkgmgr_installer_send_res_copy_signal(pi, pkgid, status, event_info);
+
+}
+	@endcode
+ */
+int pkgmgr_installer_send_res_copy_signal(pkgmgr_installer *pi,
+		const char *pkgid, const char *status,
+		pkgmgr_res_event_info_h event_info);
+
+/**
+	@brief		Send a signal of the resource copy event status
+	@pre		None
+	@post		None
+	@see		None
+	@param[in]	pi		pkgmgr_installer object
+	@param[in]	uid		user id
+	@param[in]	pkgid		package id
+	@param[in]	status		event status
+	@param[in]	event_info	event info handle
+	@return		Operation result
+	@retval		0 on success, otherwise -1
+ */
+int pkgmgr_installer_send_res_copy_signal_for_uid(pkgmgr_installer *pi,
+		uid_t uid, const char *pkgid, const char *status,
+		pkgmgr_res_event_info_h event_info);
 
 #ifdef __cplusplus
 }

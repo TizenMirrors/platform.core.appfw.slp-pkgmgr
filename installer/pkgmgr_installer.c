@@ -34,6 +34,7 @@
 #include <gio/gio.h>
 #include <tzplatform_config.h>
 
+#include "package-manager.h"
 #include "pkgmgr_installer.h"
 #include "pkgmgr_installer_config.h"
 #include "pkgmgr_installer_debug.h"
@@ -178,6 +179,12 @@ static const char *__get_signal_name(pkgmgr_installer *pi, const char *key,
 		return PKGMGR_INSTALLER_CLEAR_EVENT_STR;
 	case PKGMGR_REQ_GETSIZE:
 		return PKGMGR_INSTALLER_GET_SIZE_KEY_STR;
+	case PKGMGR_REQ_RES_COPY:
+		return PKGMGR_INSTALLER_RES_COPY_EVENT_STR;
+	case PKGMGR_REQ_RES_REMOVE:
+		return PKGMGR_INSTALLER_RES_REMOVE_EVENT_STR;
+	case PKGMGR_REQ_RES_UNINSTALL:
+		return PKGMGR_INSTALLER_RES_UNINSTALL_EVENT_STR;
 	}
 
 	ERR("cannot find type");
@@ -1244,5 +1251,117 @@ API int pkgmgr_installer_set_is_upgrade(pkgmgr_installer *pi, int is_upgrade) {
 		return -1;
 
 	pi->is_upgrade = is_upgrade;
+	return 0;
+}
+
+API int pkgmgr_installer_send_res_copy_signal(pkgmgr_installer *pi,
+		const char *pkgid, const char *status,
+		pkgmgr_res_event_info_h event_info)
+{
+	char *sid;
+	const char *signal_name;
+	GError *err = NULL;
+
+	if (!pi || !pkgid || !status) {
+		ERR("invalid argument");
+		return -1;
+	}
+
+	sid = pi->session_id;
+	if (!sid)
+		sid = "";
+
+	signal_name = __get_signal_name(pi, "", "");
+	if (!signal_name) {
+		ERR("unknown signal type");
+		return -1;
+	}
+
+	if (g_dbus_connection_emit_signal(pi->conn, NULL,
+				PKGMGR_INSTALLER_DBUS_OBJECT_PATH,
+				PKGMGR_INSTALLER_DBUS_INTERFACE, signal_name,
+				g_variant_new("(usss)", pi->target_uid, sid,
+						pkgid, status), &err) != TRUE) {
+		ERR("failed to send dbus signal");
+		if (err) {
+			ERR("err: %s", err->message);
+			g_error_free(err);
+		}
+		return -1;
+	}
+
+	return 0;
+}
+
+API int pkgmgr_installer_send_res_copy_signal_for_uid(pkgmgr_installer *pi,
+		uid_t uid, const char *pkgid, const char *status,
+		pkgmgr_res_event_info_h event_info)
+{
+	char *sid;
+	size_t data_len;
+	size_t name_size;
+	GVariant *gv;
+	gsize gv_len;
+	gpointer gv_data;
+	void *data;
+	void *ptr;
+	const char *signal_name;
+
+	if (!pi || !pi->conn) {
+		ERR("connection is NULL");
+		return -1;
+	}
+
+	sid = pi->session_id;
+	if (!sid)
+		sid = "";
+
+	data_len = sizeof(size_t) + sizeof(gsize);
+
+	/* including null byte */
+	signal_name = __get_signal_name(pi, "", "");
+	if (!signal_name) {
+		ERR("unknown signal type");
+		return -1;
+	}
+	name_size = strlen(signal_name) + 1;
+	data_len += name_size;
+
+	gv = g_variant_new("(usss)", pi->target_uid, sid, pkgid, status);
+	if (gv == NULL) {
+		ERR("failed to create GVariant instance");
+		return -1;
+	}
+
+	gv_len = g_variant_get_size(gv);
+	gv_data = g_malloc(gv_len);
+	g_variant_store(gv, gv_data);
+	g_variant_unref(gv);
+	data_len += gv_len;
+
+	data = malloc(data_len);
+	if (data == NULL) {
+		ERR("out of memory");
+		g_free(gv_data);
+		return -1;
+	}
+	ptr = data;
+	memcpy(ptr, &name_size, sizeof(size_t));
+	ptr += sizeof(size_t);
+	memcpy(ptr, &gv_len, sizeof(gsize));
+	ptr += sizeof(gsize);
+	memcpy(ptr, signal_name, name_size);
+	ptr += name_size;
+	memcpy(ptr, gv_data, gv_len);
+	g_free(gv_data);
+
+	if (__send_signal_to_agent(uid, data, data_len)) {
+		ERR("failed to send signal to agent");
+		free(data);
+		return -1;
+	}
+
+	free(data);
+
 	return 0;
 }

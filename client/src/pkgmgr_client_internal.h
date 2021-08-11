@@ -41,7 +41,7 @@ struct cb_info {
 	pkgmgr_handler event_cb;
 	pkgmgr_app_handler app_event_cb;
 	pkgmgr_pkg_size_info_receive_cb size_info_cb;
-	pkgmgr_res_request_cb res_request_cb;
+	pkgmgr_res_copy_handler res_copy_event_cb;
 	void *data;
 	struct pkgmgr_client_t *client;
 	GList *sid_list;
