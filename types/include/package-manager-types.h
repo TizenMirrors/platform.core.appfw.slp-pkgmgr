@@ -125,6 +125,10 @@ typedef struct _package_manager_pkg_detail_info_t {
 	GList *dependency_list;
 } package_manager_pkg_detail_info_t;
 
+typedef struct _pkgmgr_res_event_info_t {
+	int error_code;
+} pkgmgr_res_event_info_t;
+
 /** @} */
 
 #ifdef __cplusplus

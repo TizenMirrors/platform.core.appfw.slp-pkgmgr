@@ -1236,7 +1236,7 @@ int pkgmgr_installer_set_is_upgrade(pkgmgr_installer *pi, int is_upgrade);
 #include <pkgmgr_installer.h>
 void send_res_copy_singal(uid_t uid, int request_type, const char *session_id,
 		const char *pkgid, const char *status,
-		pkgmgr_res_event_info_h event_info)
+		pkgmgr_res_event_info *event_info)
 {
 	pkgmgr_installer *pi;
 	int r = 0;
@@ -1257,7 +1257,7 @@ void send_res_copy_singal(uid_t uid, int request_type, const char *session_id,
  */
 int pkgmgr_installer_send_res_copy_signal(pkgmgr_installer *pi,
 		const char *pkgid, const char *status,
-		pkgmgr_res_event_info_h event_info);
+		pkgmgr_res_event_info *event_info);
 
 /**
 	@brief		Send a signal of the resource copy event status
@@ -1274,7 +1274,7 @@ int pkgmgr_installer_send_res_copy_signal(pkgmgr_installer *pi,
  */
 int pkgmgr_installer_send_res_copy_signal_for_uid(pkgmgr_installer *pi,
 		uid_t uid, const char *pkgid, const char *status,
-		pkgmgr_res_event_info_h event_info);
+		pkgmgr_res_event_info *event_info);
 
 #ifdef __cplusplus
 }
