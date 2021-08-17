@@ -24,6 +24,7 @@
 #include <gio/gio.h>
 
 #include "package-manager.h"
+#include "package-manager-types.h"
 #include "pkgmgr_client_debug.h"
 #include "pkgmgr_client_internal.h"
 #include "../../installer/pkgmgr_installer.h"
@@ -246,22 +247,36 @@ static void __handle_res_copy_event_signal(const gchar *signal_name,
 	char *status = NULL;
 	struct cb_info *cb_info = (struct cb_info *)user_data;
 	int signal_type;
+	GVariant *extra_param = NULL;
+	pkgmgr_res_event_info_t event_info;
 
 	if (!cb_info->res_copy_event_cb)
 		return;
 
-	g_variant_get(parameters, "(u&s&s&s)", &target_uid, &req_id, &pkgid, &status);
+	g_variant_get(parameters, "(u&s&s&sv)", &target_uid, &req_id, &pkgid, &status, &extra_param);
+	if (!g_variant_type_equal(G_VARIANT_TYPE("(i)"),
+			g_variant_get_type(extra_param))) {
+		ERR("invalid extra parameter");
+		g_variant_unref(extra_param);
+		return;
+	}
 	if (cb_info->req_key) {
-		if (strcmp(cb_info->req_key, req_id) != 0)
+		if (strcmp(cb_info->req_key, req_id) != 0) {
+			g_variant_unref(extra_param);
 			return;
+		}
 	} else {
 		signal_type = __get_signal_type(signal_name);
-		if (signal_type < 0 || !(cb_info->status_type & signal_type))
+		if (signal_type < 0 || !(cb_info->status_type & signal_type)) {
+			g_variant_unref(extra_param);
 			return;
+		}
 	}
 
+	g_variant_get(extra_param, "(i)", &event_info.error_code);
 	cb_info->res_copy_event_cb(target_uid, cb_info->req_id, pkgid, signal_name,
-			status, NULL, cb_info->data);
+			status, &event_info, cb_info->data);
+	g_variant_unref(extra_param);
 }
 
 static void __signal_handler(GDBusConnection *conn, const gchar *sender_name,

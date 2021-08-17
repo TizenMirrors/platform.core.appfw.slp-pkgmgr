@@ -159,7 +159,7 @@ typedef enum _pkgmgr_return_val {
 
 typedef void pkgmgr_client;
 typedef void pkgmgr_info;
-typedef void *pkgmgr_res_event_info_h;
+typedef void pkgmgr_res_event_info;
 
 typedef struct {
 	long long data_size;
@@ -182,10 +182,6 @@ typedef struct {
 	pkgmgr_updateinfo_type type;
 } pkg_update_info_t;
 
-typedef struct {
-	char *pkgid;
-} pkgmgr_res_event_info_t;
-
 typedef int (*pkgmgr_iter_fn)(const char *pkg_type, const char *pkgid,
 				const char *version, void *data);
 
@@ -205,7 +201,7 @@ typedef void (*pkgmgr_total_pkg_size_info_receive_cb)(pkgmgr_client *pc,
 
 typedef void (*pkgmgr_res_copy_handler)(uid_t target_uid, int req_id,
 		const char *pkgid, const char *request_type, const char *status,
-		pkgmgr_res_event_info_h handle, void *user_data);
+		pkgmgr_res_event_info *handle, void *user_data);
 
 typedef enum {
 	PC_REQUEST = 0,
@@ -1304,6 +1300,53 @@ int pkgmgr_client_res_remove(pkgmgr_client *pc, pkgmgr_res_copy_handler event_cb
  */
 int pkgmgr_client_res_uninstall(pkgmgr_client *pc, const char *pkgid, pkgmgr_res_copy_handler event_cb, void *user_data);
 int pkgmgr_client_res_usr_uninstall(pkgmgr_client *pc, const char *pkgid, pkgmgr_res_copy_handler event_cb, void *user_data, uid_t uid);
+
+/**
+ * @brief	This API creates resource event info.
+ *
+ * This API is for package-manager client application.\n
+ *
+ * @return	resource event info object
+ * @retval	NULL	on failure creating an object
+*/
+pkgmgr_res_event_info *pkgmgr_res_event_info_new();
+
+/**
+ * @brief	This API delete resource event info.
+ *
+ * This API is for package-manager client application.\n
+ *
+ * @param[in]	info	resource event info
+ * @return	Operation result;
+ * @retval	PKGMGR_R_OK	success
+ * @retval	PKGMGR_R_EINVAL	invalid argument
+ * @retval	PKGMGR_R_ERROR	internal error
+*/
+int pkgmgr_res_event_info_free(pkgmgr_res_event_info *info);
+
+/**
+ * @brief	This API gets the error code from resource callback handle
+ *
+ * This API is for package-manager client application.\n
+ *
+ * @param[in]	handle		resource event information handle
+ * @param[in]	error_code	error code about resource event
+ * @retval	PKGMGR_R_OK	success
+ * @retval	PKGMGR_R_EINVAL	invalid argument
+*/
+int pkgmgr_res_event_info_set_error_code(pkgmgr_res_event_info *handle, int error_code);
+
+/**
+ * @brief	This API gets the error code from resource callback handle
+ *
+ * This API is for package-manager client application.\n
+ *
+ * @param[in]	handle		resource event information handle
+ * @param[out]	error_code	error code about resource event
+ * @retval	PKGMGR_R_OK	success
+ * @retval	PKGMGR_R_EINVAL	invalid argument
+*/
+int pkgmgr_res_event_info_get_error_code(pkgmgr_res_event_info *handle, int *error_code);
 
 /** @} */
 

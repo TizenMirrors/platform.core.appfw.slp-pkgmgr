@@ -40,6 +40,7 @@
 #include <tzplatform_config.h>
 
 #include "package-manager.h"
+#include "package-manager-types.h"
 #include "pkgmgr_client_debug.h"
 #include "pkgmgr_client_internal.h"
 
@@ -2992,4 +2993,56 @@ API int pkgmgr_client_res_usr_uninstall(pkgmgr_client *pc, const char *pkgid,
 	client->cb_info_list = g_list_append(client->cb_info_list, cb_info);
 
 	return cb_info->req_id;
+}
+
+API pkgmgr_res_event_info *pkgmgr_res_event_info_new()
+{
+	pkgmgr_res_event_info_t *info;
+
+	info = calloc(1, sizeof(pkgmgr_res_event_info_t));
+	if (info == NULL) {
+		ERR("out of memory");
+		return NULL;
+	}
+
+	return (pkgmgr_res_event_info *)info;
+}
+
+API int pkgmgr_res_event_info_free(pkgmgr_res_event_info *info)
+{
+	pkgmgr_res_event_info_t *event_info =
+			(pkgmgr_res_event_info_t *)info;
+
+	if (event_info == NULL) {
+		ERR("invalid argument");
+		return PKGMGR_R_EINVAL;
+	}
+
+	free(event_info);
+
+	return PKGMGR_R_OK;
+}
+
+API int pkgmgr_res_event_info_set_error_code(pkgmgr_res_event_info *handle, int error_code)
+{
+	pkgmgr_res_event_info_t *info = handle;
+	if (info == NULL) {
+		ERR("invalid parameter");
+		return PKGMGR_R_EINVAL;
+	}
+
+	info->error_code = error_code;
+	return PKGMGR_R_OK;
+}
+
+API int pkgmgr_res_event_info_get_error_code(pkgmgr_res_event_info *handle, int *error_code)
+{
+	pkgmgr_res_event_info_t *info = handle;
+	if (info == NULL || error_code == NULL) {
+		ERR("invalid parameter");
+		return PKGMGR_R_EINVAL;
+	}
+
+	*error_code = info->error_code;
+	return PKGMGR_R_OK;
 }

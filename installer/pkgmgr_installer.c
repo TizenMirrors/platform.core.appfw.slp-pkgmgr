@@ -40,6 +40,7 @@
 #include "pkgmgr_installer_debug.h"
 #include "pkgmgr_installer_info.h"
 #include "pkgmgr_installer_error.h"
+#include "package-manager-types.h"
 
 #include <pkgmgr-info.h>
 
@@ -1254,9 +1255,16 @@ API int pkgmgr_installer_set_is_upgrade(pkgmgr_installer *pi, int is_upgrade) {
 	return 0;
 }
 
+static GVariant *__get_gvariant_from_event_info(pkgmgr_res_event_info *event_info)
+{
+	pkgmgr_res_event_info_t *info = event_info;
+
+	return g_variant_new("(i)", info->error_code);
+}
+
 API int pkgmgr_installer_send_res_copy_signal(pkgmgr_installer *pi,
 		const char *pkgid, const char *status,
-		pkgmgr_res_event_info_h event_info)
+		pkgmgr_res_event_info *event_info)
 {
 	char *sid;
 	const char *signal_name;
@@ -1280,8 +1288,11 @@ API int pkgmgr_installer_send_res_copy_signal(pkgmgr_installer *pi,
 	if (g_dbus_connection_emit_signal(pi->conn, NULL,
 				PKGMGR_INSTALLER_DBUS_OBJECT_PATH,
 				PKGMGR_INSTALLER_DBUS_INTERFACE, signal_name,
-				g_variant_new("(usss)", pi->target_uid, sid,
-						pkgid, status), &err) != TRUE) {
+				g_variant_new("(usssv)", pi->target_uid, sid,
+						pkgid, status,
+						__get_gvariant_from_event_info(
+								event_info)),
+				&err) != TRUE) {
 		ERR("failed to send dbus signal");
 		if (err) {
 			ERR("err: %s", err->message);
@@ -1295,7 +1306,7 @@ API int pkgmgr_installer_send_res_copy_signal(pkgmgr_installer *pi,
 
 API int pkgmgr_installer_send_res_copy_signal_for_uid(pkgmgr_installer *pi,
 		uid_t uid, const char *pkgid, const char *status,
-		pkgmgr_res_event_info_h event_info)
+		pkgmgr_res_event_info *event_info)
 {
 	char *sid;
 	size_t data_len;
@@ -1327,7 +1338,9 @@ API int pkgmgr_installer_send_res_copy_signal_for_uid(pkgmgr_installer *pi,
 	name_size = strlen(signal_name) + 1;
 	data_len += name_size;
 
-	gv = g_variant_new("(usss)", pi->target_uid, sid, pkgid, status);
+	gv = g_variant_new("(usssv)", pi->target_uid, sid,
+			pkgid, status,
+			__get_gvariant_from_event_info(event_info));
 	if (gv == NULL) {
 		ERR("failed to create GVariant instance");
 		return -1;
