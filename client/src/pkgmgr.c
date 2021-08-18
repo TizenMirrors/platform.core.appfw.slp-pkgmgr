@@ -1882,6 +1882,37 @@ API int pkgmgr_client_listen_app_status(pkgmgr_client *pc,
 	return cb_info->req_id;
 }
 
+API int pkgmgr_client_listen_res_copy_status(pkgmgr_client *pc,
+		pkgmgr_res_copy_handler event_cb, void *data)
+{
+	int ret;
+	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
+	struct cb_info *cb_info;
+
+	if (pc == NULL || event_cb == NULL) {
+		ERR("invalid parameter");
+		return PKGMGR_R_EINVAL;
+	}
+
+	if (client->pc_type != PC_LISTENING) {
+		ERR("client->pc_type is not PC_LISTENING");
+		return PKGMGR_R_EINVAL;
+	}
+
+	cb_info = __create_res_copy_event_cb_info(client, event_cb, data, NULL);
+	if (cb_info == NULL)
+		return PKGMGR_R_ENOMEM;
+	cb_info->status_type = client->status_type;
+	ret = pkgmgr_client_connection_set_callback(client, cb_info);
+	if (ret != PKGMGR_R_OK) {
+		__free_cb_info(cb_info);
+		return ret;
+	}
+	client->cb_info_list = g_list_append(client->cb_info_list, cb_info);
+
+	return cb_info->req_id;
+}
+
 API int pkgmgr_client_remove_listen_status(pkgmgr_client *pc)
 {
 	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
