@@ -115,6 +115,9 @@ extern "C" {
 #define PKGMGR_CLIENT_STATUS_ENABLE_APP_SPLASH_SCREEN		0x0200
 #define PKGMGR_CLIENT_STATUS_DISABLE_APP_SPLASH_SCREEN		0x0400
 #define PKGMGR_CLIENT_STATUS_CLEAR_CACHE			0x0800
+#define PKGMGR_CLIENT_STATUS_RES_COPY				0x1000
+#define PKGMGR_CLIENT_STATUS_RES_REMOVE				0x2000
+#define PKGMGR_CLIENT_STATUS_RES_UNINSTALL			0x4000
 
 /** @} */
 
@@ -783,6 +786,22 @@ int pkgmgr_client_listen_status(pkgmgr_client *pc, pkgmgr_handler event_cb,
 */
 int pkgmgr_client_listen_app_status(pkgmgr_client *pc, pkgmgr_app_handler event_cb,
 				    void *data);
+
+/**
+ * @brief	This API request to listen the pkgmgr's broadcasting about resource copy
+ *
+ * This API is for package-manager client application.\n
+ *
+ * @param[in]	pc		pkgmgr_client
+ * @param[in]	event_cb	user callback
+ * @param[in]	data		user data
+ * @return	request_id (>0) if success, error code(<0) if fail\n
+ * @retval	PKGMGR_R_OK	success
+ * @retval	PKGMGR_R_EINVAL	invalid argument
+ * @retval	PKGMGR_R_ENOMEM	out of memory
+*/
+int pkgmgr_client_listen_res_copy_status(pkgmgr_client *pc,
+		pkgmgr_res_copy_handler event_cb, void *data);
 
 /**
  * @brief	This API request to stop listen the pkgmgr's broadcasting
