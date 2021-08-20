@@ -54,6 +54,7 @@ struct pkgmgr_client_t {
 	GList *cb_info_list;
 	GVariantBuilder *res_copy_builder;
 	GVariantBuilder *res_remove_builder;
+	GVariantBuilder *res_create_dir_builder;
 	char *tep_path;
 	bool tep_move;
 	bool debug_mode;

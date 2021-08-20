@@ -416,6 +416,8 @@ API int pkgmgr_client_free(pkgmgr_client *pc)
 		g_variant_builder_unref(client->res_copy_builder);
 	if (client->res_remove_builder)
 		g_variant_builder_unref(client->res_remove_builder);
+	if (client->res_create_dir_builder)
+		g_variant_builder_unref(client->res_create_dir_builder);
 	free(client);
 
 	return PKGMGR_R_OK;
@@ -2834,6 +2836,79 @@ API int pkgmgr_client_res_copy(pkgmgr_client *pc,
 			"res_copy",
 			g_variant_new("(a(ss))",
 			client->res_copy_builder), &result);
+	if (ret != PKGMGR_R_OK) {
+		ERR("request failed: %d", ret);
+		return ret;
+	}
+
+	g_variant_get(result, "(i&s)", &ret, &req_key);
+	if (req_key == NULL) {
+		g_variant_unref(result);
+		return PKGMGR_R_ECOMM;
+	}
+	if (ret != PKGMGR_R_OK) {
+		g_variant_unref(result);
+		return ret;
+	}
+
+	cb_info = __create_res_copy_event_cb_info(client,
+			event_cb, user_data, req_key);
+	g_variant_unref(result);
+	if (cb_info == NULL)
+		return PKGMGR_R_ENOMEM;
+
+	ret = pkgmgr_client_connection_set_callback(client, cb_info);
+	if (ret != PKGMGR_R_OK) {
+		__free_cb_info(cb_info);
+		return ret;
+	}
+	client->cb_info_list = g_list_append(client->cb_info_list, cb_info);
+
+	return cb_info->req_id;
+}
+
+API int pkgmgr_client_add_res_create_dir_path(pkgmgr_client *pc,
+		const char *dir_path)
+{
+	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
+
+	if (pc == NULL || dir_path == NULL) {
+		ERR("invalid parameter");
+		return PKGMGR_R_EINVAL;
+	}
+
+	if (client->res_create_dir_builder == NULL) {
+		client->res_create_dir_builder =
+				g_variant_builder_new(G_VARIANT_TYPE("as"));
+		if (client->res_create_dir_builder == NULL) {
+			ERR("out of memory");
+			return PKGMGR_R_ENOMEM;
+		}
+	}
+
+	g_variant_builder_add(client->res_create_dir_builder, "s", dir_path);
+
+	return PKGMGR_R_OK;
+}
+
+API int pkgmgr_client_res_create_dir(pkgmgr_client *pc,
+		pkgmgr_res_copy_handler event_cb, void *user_data)
+{
+	GVariant *result;
+	int ret;
+	char *req_key = NULL;
+	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
+	struct cb_info *cb_info;
+
+	if (pc == NULL || event_cb == NULL) {
+		ERR("invalid parameter");
+		return PKGMGR_R_EINVAL;
+	}
+
+	ret = pkgmgr_client_connection_send_request(client,
+			"res_create_dir",
+			g_variant_new("(as)",
+			client->res_create_dir_builder), &result);
 	if (ret != PKGMGR_R_OK) {
 		ERR("request failed: %d", ret);
 		return ret;
