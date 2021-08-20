@@ -116,8 +116,9 @@ extern "C" {
 #define PKGMGR_CLIENT_STATUS_DISABLE_APP_SPLASH_SCREEN		0x0400
 #define PKGMGR_CLIENT_STATUS_CLEAR_CACHE			0x0800
 #define PKGMGR_CLIENT_STATUS_RES_COPY				0x1000
-#define PKGMGR_CLIENT_STATUS_RES_REMOVE				0x2000
-#define PKGMGR_CLIENT_STATUS_RES_UNINSTALL			0x4000
+#define PKGMGR_CLIENT_STATUS_RES_CREATE_DIR			0x2000
+#define PKGMGR_CLIENT_STATUS_RES_REMOVE				0x4000
+#define PKGMGR_CLIENT_STATUS_RES_UNINSTALL			0x8000
 
 /** @} */
 
@@ -1250,6 +1251,37 @@ int pkgmgr_client_add_res_copy_path(pkgmgr_client *pc, const char *src_path, con
  * @retval	PKGMGR_R_EPRIV	privilege denied
 */
 int pkgmgr_client_res_copy(pkgmgr_client *pc, pkgmgr_res_copy_handler event_cb, void *user_data);
+
+/**
+ * @brief	Add directory path to create in the resource sharing directory of the package
+ *
+ * This API adds directory path for resource create directory request.\n
+ *
+ * @param[in]	pc		The pointer to pkgmgr_client instance
+ * @param[in]	dir_path	Path of a directory that client want to create
+ * @return	0 if success, error code(<0) if fail\n
+ * @retval	PKGMGR_R_OK	success
+ * @retval	PKGMGR_R_EINVAL	invalid argument
+ * @retval	PKGMGR_R_ENOMEM	out of memory
+ */
+int pkgmgr_client_add_res_create_dir_path(pkgmgr_client *pc, const char *dir_path);
+
+/**
+ * @brief	This API create directories in the resource sharing directory of the package
+ *
+ * This API is for package-manager client application.\n
+ *
+ * @param[in]	pc		pkgmgr_client
+ * @param[in]	event_cb	user callback
+ * @param[in]	data		user data
+ * @return	request_id (>0) if success, error code(<0) if fail\n
+ * @retval	PKGMGR_R_OK	success
+ * @retval	PKGMGR_R_ECOMM	communication error
+ * @retval	PKGMGR_R_EINVAL	invalid argument
+ * @retval	PKGMGR_R_ENOMEM	out of memory
+ * @retval	PKGMGR_R_EPRIV	privilege denied
+*/
+int pkgmgr_client_res_create_dir(pkgmgr_client *pc, pkgmgr_res_copy_handler event_cb, void *user_data);
 
 /**
  * @brief	Add resource path to remove
