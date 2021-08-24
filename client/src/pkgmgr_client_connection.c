@@ -291,7 +291,8 @@ static void __signal_handler(GDBusConnection *conn, const gchar *sender_name,
 		__handle_pkg_signal(signal_name, parameters, user_data);
 	} else if (!strcmp(signal_name, PKGMGR_INSTALLER_RES_COPY_EVENT_STR) ||
 			!strcmp(signal_name, PKGMGR_INSTALLER_RES_REMOVE_EVENT_STR) ||
-			!strcmp(signal_name, PKGMGR_INSTALLER_RES_UNINSTALL_EVENT_STR)) {
+			!strcmp(signal_name, PKGMGR_INSTALLER_RES_UNINSTALL_EVENT_STR) ||
+			!strcmp(signal_name, PKGMGR_INSTALLER_RES_CREATE_DIR_EVENT_STR)) {
 		__handle_res_copy_event_signal(signal_name, parameters, user_data);
 	}
 }
