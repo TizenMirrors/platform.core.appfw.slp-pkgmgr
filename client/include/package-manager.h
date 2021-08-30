@@ -1321,17 +1321,15 @@ int pkgmgr_client_res_remove(pkgmgr_client *pc, pkgmgr_res_copy_handler event_cb
  *
  * @param[in]	pc		pkgmgr_client
  * @param[in]	pkgid		package id
- * @param[in]	event_cb	user callback
- * @param[in]	user_data	user data
- * @return	request_id (>0) if success, error code(<0) if fail\n
+ * @return	PKGMGR_R_OK if success, error code(<0) if fail\n
  * @retval	PKGMGR_R_OK	success
  * @retval	PKGMGR_R_ECOMM	communication error
  * @retval	PKGMGR_R_EINVAL	invalid argument
  * @retval	PKGMGR_R_ENOMEM	out of memory
  * @retval	PKGMGR_R_EPRIV	privilege denied
  */
-int pkgmgr_client_res_uninstall(pkgmgr_client *pc, const char *pkgid, pkgmgr_res_copy_handler event_cb, void *user_data);
-int pkgmgr_client_res_usr_uninstall(pkgmgr_client *pc, const char *pkgid, pkgmgr_res_copy_handler event_cb, void *user_data, uid_t uid);
+int pkgmgr_client_res_uninstall(pkgmgr_client *pc, const char *pkgid);
+int pkgmgr_client_res_usr_uninstall(pkgmgr_client *pc, const char *pkgid, uid_t uid);
 
 /**
  * @brief	This API creates resource event info.
