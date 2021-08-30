@@ -3015,23 +3015,19 @@ API int pkgmgr_client_res_remove(pkgmgr_client *pc,
 	return cb_info->req_id;
 }
 
-API int pkgmgr_client_res_uninstall(pkgmgr_client *pc, const char *pkgid,
-		pkgmgr_res_copy_handler event_cb, void *user_data)
+API int pkgmgr_client_res_uninstall(pkgmgr_client *pc, const char *pkgid)
 {
-	return pkgmgr_client_res_usr_uninstall(pc, pkgid, event_cb,
-			user_data, _getuid());
+	return pkgmgr_client_res_usr_uninstall(pc, pkgid, _getuid());
 }
 
 API int pkgmgr_client_res_usr_uninstall(pkgmgr_client *pc, const char *pkgid,
-		pkgmgr_res_copy_handler event_cb, void *user_data, uid_t uid)
+		uid_t uid)
 {
 	GVariant *result;
 	int ret = PKGMGR_R_ECOMM;
-	char *req_key = NULL;
 	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
-	struct cb_info *cb_info;
 
-	if (pc == NULL || pkgid == NULL || event_cb == NULL) {
+	if (pc == NULL || pkgid == NULL) {
 		ERR("invalid parameter");
 		return PKGMGR_R_EINVAL;
 	}
@@ -3044,30 +3040,10 @@ API int pkgmgr_client_res_usr_uninstall(pkgmgr_client *pc, const char *pkgid,
 		return ret;
 	}
 
-	g_variant_get(result, "(i&s)", &ret, &req_key);
-	if (req_key == NULL) {
-		g_variant_unref(result);
-		return PKGMGR_R_ECOMM;
-	}
-	if (ret != PKGMGR_R_OK) {
-		g_variant_unref(result);
-		return ret;
-	}
-
-	cb_info = __create_res_copy_event_cb_info(client,
-			event_cb, user_data, req_key);
+	g_variant_get(result, "(i)", &ret);
 	g_variant_unref(result);
-	if (cb_info == NULL)
-		return PKGMGR_R_ENOMEM;
 
-	ret = pkgmgr_client_connection_set_callback(client, cb_info);
-	if (ret != PKGMGR_R_OK) {
-		__free_cb_info(cb_info);
-		return ret;
-	}
-	client->cb_info_list = g_list_append(client->cb_info_list, cb_info);
-
-	return cb_info->req_id;
+	return ret;
 }
 
 API pkgmgr_res_event_info *pkgmgr_res_event_info_new()
