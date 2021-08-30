@@ -36,6 +36,7 @@
 #include <dlog.h>
 
 #include "pkgmgr_installer_config.h"
+#include "pkgmgr_installer_type.h"
 
 #ifdef LOG_TAG
 #undef LOG_TAG
@@ -258,8 +259,16 @@ static gboolean __handle_signal(gint fd, GIOCondition cond, gpointer user_data)
 	memcpy(data, buf + type_len, data_len);
 
 	/* floating type GVariant instance */
-	gv = g_variant_new_from_data(G_VARIANT_TYPE("(usa(sss)ss)"), data,
-			data_len, TRUE, NULL, NULL);
+	if (!strcmp(type_name, PKGMGR_INSTALLER_RES_COPY_EVENT_STR) ||
+		!strcmp(type_name, PKGMGR_INSTALLER_RES_CREATE_DIR_EVENT_STR) ||
+		!strcmp(type_name, PKGMGR_INSTALLER_RES_REMOVE_EVENT_STR) ||
+		!strcmp(type_name, PKGMGR_INSTALLER_RES_UNINSTALL_EVENT_STR)) {
+		gv = g_variant_new_from_data(G_VARIANT_TYPE("(usssv)"),
+				data, data_len, TRUE, NULL, NULL);
+	} else {
+		gv = g_variant_new_from_data(G_VARIANT_TYPE("(usa(sss)ss)"),
+				data, data_len, TRUE, NULL, NULL);
+	}
 	__emit_signal(type_name, gv);
 
 	free(data);
