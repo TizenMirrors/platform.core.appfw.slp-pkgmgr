@@ -205,6 +205,7 @@ rm -rf %{_sysconfdir}/package-manager/pkgmgr-label-initial-image.sh
 %manifest %{name}-installer-devel.manifest
 %defattr(-,root,root,-)
 %dir %{_includedir}/pkgmgr
+%{_includedir}/package-manager.h
 %{_includedir}/pkgmgr/*.h
 %{_libdir}/pkgconfig/pkgmgr-installer.pc
 %{_libdir}/libpkgmgr_installer.so
