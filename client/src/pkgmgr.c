@@ -142,9 +142,9 @@ static struct cb_info *__create_app_event_cb_info(
 	return cb_info;
 }
 
-static struct cb_info *__create_res_copy_event_cb_info(
+static struct cb_info *__create_res_event_cb_info(
 		struct pkgmgr_client_t *client,
-		pkgmgr_res_copy_handler res_copy_event_cb,
+		pkgmgr_res_handler res_event_cb,
 		void *data, const char *req_key)
 {
 	struct cb_info *cb_info;
@@ -156,7 +156,7 @@ static struct cb_info *__create_res_copy_event_cb_info(
 	}
 
 	cb_info->client = client;
-	cb_info->res_copy_event_cb = res_copy_event_cb;
+	cb_info->res_event_cb = res_event_cb;
 	cb_info->data = data;
 	cb_info->req_id = _get_internal_request_id();
 	if (req_key == NULL)
@@ -1883,8 +1883,8 @@ API int pkgmgr_client_listen_app_status(pkgmgr_client *pc,
 	return cb_info->req_id;
 }
 
-API int pkgmgr_client_listen_res_copy_status(pkgmgr_client *pc,
-		pkgmgr_res_copy_handler event_cb, void *data)
+API int pkgmgr_client_listen_res_status(pkgmgr_client *pc,
+		pkgmgr_res_handler event_cb, void *data)
 {
 	int ret;
 	struct pkgmgr_client_t *client = (struct pkgmgr_client_t *)pc;
@@ -1900,7 +1900,7 @@ API int pkgmgr_client_listen_res_copy_status(pkgmgr_client *pc,
 		return PKGMGR_R_EINVAL;
 	}
 
-	cb_info = __create_res_copy_event_cb_info(client, event_cb, data, NULL);
+	cb_info = __create_res_event_cb_info(client, event_cb, data, NULL);
 	if (cb_info == NULL)
 		return PKGMGR_R_ENOMEM;
 	cb_info->status_type = client->status_type;
@@ -2819,7 +2819,7 @@ API int pkgmgr_client_add_res_copy_path(pkgmgr_client *pc,
 }
 
 API int pkgmgr_client_res_copy(pkgmgr_client *pc,
-		pkgmgr_res_copy_handler event_cb, void *user_data)
+		pkgmgr_res_handler event_cb, void *user_data)
 {
 	GVariant *result;
 	int ret;
@@ -2851,7 +2851,7 @@ API int pkgmgr_client_res_copy(pkgmgr_client *pc,
 		return ret;
 	}
 
-	cb_info = __create_res_copy_event_cb_info(client,
+	cb_info = __create_res_event_cb_info(client,
 			event_cb, user_data, req_key);
 	g_variant_unref(result);
 	if (cb_info == NULL)
@@ -2892,7 +2892,7 @@ API int pkgmgr_client_add_res_create_dir_path(pkgmgr_client *pc,
 }
 
 API int pkgmgr_client_res_create_dir(pkgmgr_client *pc,
-		pkgmgr_res_copy_handler event_cb, void *user_data)
+		pkgmgr_res_handler event_cb, void *user_data)
 {
 	GVariant *result;
 	int ret;
@@ -2924,7 +2924,7 @@ API int pkgmgr_client_res_create_dir(pkgmgr_client *pc,
 		return ret;
 	}
 
-	cb_info = __create_res_copy_event_cb_info(client,
+	cb_info = __create_res_event_cb_info(client,
 			event_cb, user_data, req_key);
 	g_variant_unref(result);
 	if (cb_info == NULL)
@@ -2965,7 +2965,7 @@ API int pkgmgr_client_add_res_remove_path(pkgmgr_client *pc,
 }
 
 API int pkgmgr_client_res_remove(pkgmgr_client *pc,
-		pkgmgr_res_copy_handler event_cb, void *user_data)
+		pkgmgr_res_handler event_cb, void *user_data)
 {
 	GVariant *result;
 	int ret;
@@ -2997,7 +2997,7 @@ API int pkgmgr_client_res_remove(pkgmgr_client *pc,
 		return ret;
 	}
 
-	cb_info = __create_res_copy_event_cb_info(client,
+	cb_info = __create_res_event_cb_info(client,
 			event_cb, user_data, req_key);
 	g_variant_unref(result);
 	if (cb_info == NULL)

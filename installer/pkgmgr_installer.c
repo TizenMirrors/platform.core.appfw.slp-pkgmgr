@@ -1264,7 +1264,7 @@ static GVariant *__get_gvariant_from_event_info(pkgmgr_res_event_info *event_inf
 	return g_variant_new("(i)", info->error_code);
 }
 
-API int pkgmgr_installer_send_res_copy_signal(pkgmgr_installer *pi,
+API int pkgmgr_installer_send_res_signal(pkgmgr_installer *pi,
 		const char *pkgid, const char *status,
 		pkgmgr_res_event_info *event_info)
 {
@@ -1306,7 +1306,7 @@ API int pkgmgr_installer_send_res_copy_signal(pkgmgr_installer *pi,
 	return 0;
 }
 
-API int pkgmgr_installer_send_res_copy_signal_for_uid(pkgmgr_installer *pi,
+API int pkgmgr_installer_send_res_signal_for_uid(pkgmgr_installer *pi,
 		uid_t uid, const char *pkgid, const char *status,
 		pkgmgr_res_event_info *event_info)
 {

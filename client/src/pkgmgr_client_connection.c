@@ -240,7 +240,7 @@ static void __handle_pkg_signal(const gchar *signal_name,
 	g_variant_iter_free(iter);
 }
 
-static void __handle_res_copy_event_signal(const gchar *signal_name,
+static void __handle_res_event_signal(const gchar *signal_name,
 		GVariant *parameters, gpointer user_data)
 {
 	uid_t target_uid;
@@ -252,7 +252,7 @@ static void __handle_res_copy_event_signal(const gchar *signal_name,
 	GVariant *extra_param = NULL;
 	pkgmgr_res_event_info_t event_info;
 
-	if (!cb_info->res_copy_event_cb)
+	if (!cb_info->res_event_cb)
 		return;
 
 	g_variant_get(parameters, "(u&s&s&sv)", &target_uid, &req_id, &pkgid, &status, &extra_param);
@@ -276,7 +276,7 @@ static void __handle_res_copy_event_signal(const gchar *signal_name,
 	}
 
 	g_variant_get(extra_param, "(i)", &event_info.error_code);
-	cb_info->res_copy_event_cb(target_uid, cb_info->req_id, pkgid, signal_name,
+	cb_info->res_event_cb(target_uid, cb_info->req_id, pkgid, signal_name,
 			status, &event_info, cb_info->data);
 	g_variant_unref(extra_param);
 }
@@ -293,7 +293,7 @@ static void __signal_handler(GDBusConnection *conn, const gchar *sender_name,
 			!strcmp(signal_name, PKGMGR_INSTALLER_RES_REMOVE_EVENT_STR) ||
 			!strcmp(signal_name, PKGMGR_INSTALLER_RES_UNINSTALL_EVENT_STR) ||
 			!strcmp(signal_name, PKGMGR_INSTALLER_RES_CREATE_DIR_EVENT_STR)) {
-		__handle_res_copy_event_signal(signal_name, parameters, user_data);
+		__handle_res_event_signal(signal_name, parameters, user_data);
 	}
 }
 
