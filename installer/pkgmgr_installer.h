@@ -1234,7 +1234,7 @@ int pkgmgr_installer_set_is_upgrade(pkgmgr_installer *pi, int is_upgrade);
 	@retval		0 on success, otherwise -1
 	@code
 #include <pkgmgr_installer.h>
-void send_res_copy_singal(uid_t uid, int request_type, const char *session_id,
+void send_res_singal(uid_t uid, int request_type, const char *session_id,
 		const char *pkgid, const char *status,
 		pkgmgr_res_event_info *event_info)
 {
@@ -1250,12 +1250,12 @@ void send_res_copy_singal(uid_t uid, int request_type, const char *session_id,
 		goto CLEANUP_RET;
 	if ((pkgmgr_installer_set_session_id(pi, session_id))
 		goto CLEANUP_RET;
-	pkgmgr_installer_send_res_copy_signal(pi, pkgid, status, event_info);
+	pkgmgr_installer_send_res_signal(pi, pkgid, status, event_info);
 
 }
 	@endcode
  */
-int pkgmgr_installer_send_res_copy_signal(pkgmgr_installer *pi,
+int pkgmgr_installer_send_res_signal(pkgmgr_installer *pi,
 		const char *pkgid, const char *status,
 		pkgmgr_res_event_info *event_info);
 
@@ -1272,7 +1272,7 @@ int pkgmgr_installer_send_res_copy_signal(pkgmgr_installer *pi,
 	@return		Operation result
 	@retval		0 on success, otherwise -1
  */
-int pkgmgr_installer_send_res_copy_signal_for_uid(pkgmgr_installer *pi,
+int pkgmgr_installer_send_res_signal_for_uid(pkgmgr_installer *pi,
 		uid_t uid, const char *pkgid, const char *status,
 		pkgmgr_res_event_info *event_info);
 

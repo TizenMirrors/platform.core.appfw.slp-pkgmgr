@@ -200,7 +200,7 @@ typedef void (*pkgmgr_pkg_size_info_receive_cb)(pkgmgr_client *pc, const char *p
 typedef void (*pkgmgr_total_pkg_size_info_receive_cb)(pkgmgr_client *pc,
 		const pkg_size_info_t *size_info, void *user_data);
 
-typedef void (*pkgmgr_res_copy_handler)(uid_t target_uid, int req_id,
+typedef void (*pkgmgr_res_handler)(uid_t target_uid, int req_id,
 		const char *pkgid, const char *request_type, const char *status,
 		pkgmgr_res_event_info *handle, void *user_data);
 
@@ -797,8 +797,8 @@ int pkgmgr_client_listen_app_status(pkgmgr_client *pc, pkgmgr_app_handler event_
  * @retval	PKGMGR_R_EINVAL	invalid argument
  * @retval	PKGMGR_R_ENOMEM	out of memory
 */
-int pkgmgr_client_listen_res_copy_status(pkgmgr_client *pc,
-		pkgmgr_res_copy_handler event_cb, void *data);
+int pkgmgr_client_listen_res_status(pkgmgr_client *pc,
+		pkgmgr_res_handler event_cb, void *data);
 
 /**
  * @brief	This API request to stop listen the pkgmgr's broadcasting
@@ -1236,7 +1236,7 @@ int pkgmgr_client_usr_migrate_external_image(pkgmgr_client *pc, const char *pkgi
 int pkgmgr_client_add_res_copy_path(pkgmgr_client *pc, const char *src_path, const char *dest_path);
 
 /**
- * @brief	This API copy resources.
+ * @brief	This API is for copy resources into shared directory exists for privileged resources.
  *
  * This API is for package-manager client application.\n
  *
@@ -1244,13 +1244,12 @@ int pkgmgr_client_add_res_copy_path(pkgmgr_client *pc, const char *src_path, con
  * @param[in]	event_cb	user callback
  * @param[in]	data		user data
  * @return	request_id (>0) if success, error code(<0) if fail\n
- * @retval	PKGMGR_R_OK	success
  * @retval	PKGMGR_R_ECOMM	communication error
  * @retval	PKGMGR_R_EINVAL	invalid argument
  * @retval	PKGMGR_R_ENOMEM	out of memory
  * @retval	PKGMGR_R_EPRIV	privilege denied
 */
-int pkgmgr_client_res_copy(pkgmgr_client *pc, pkgmgr_res_copy_handler event_cb, void *user_data);
+int pkgmgr_client_res_copy(pkgmgr_client *pc, pkgmgr_res_handler event_cb, void *user_data);
 
 /**
  * @brief	Add directory path to create in the resource sharing directory of the package
@@ -1259,7 +1258,7 @@ int pkgmgr_client_res_copy(pkgmgr_client *pc, pkgmgr_res_copy_handler event_cb, 
  *
  * @param[in]	pc		The pointer to pkgmgr_client instance
  * @param[in]	dir_path	Path of a directory that client want to create
- * @return	0 if success, error code(<0) if fail\n
+ * @return	PKGMGR_R_OK if success, error code(<0) if fail\n
  * @retval	PKGMGR_R_OK	success
  * @retval	PKGMGR_R_EINVAL	invalid argument
  * @retval	PKGMGR_R_ENOMEM	out of memory
@@ -1275,13 +1274,12 @@ int pkgmgr_client_add_res_create_dir_path(pkgmgr_client *pc, const char *dir_pat
  * @param[in]	event_cb	user callback
  * @param[in]	data		user data
  * @return	request_id (>0) if success, error code(<0) if fail\n
- * @retval	PKGMGR_R_OK	success
  * @retval	PKGMGR_R_ECOMM	communication error
  * @retval	PKGMGR_R_EINVAL	invalid argument
  * @retval	PKGMGR_R_ENOMEM	out of memory
  * @retval	PKGMGR_R_EPRIV	privilege denied
 */
-int pkgmgr_client_res_create_dir(pkgmgr_client *pc, pkgmgr_res_copy_handler event_cb, void *user_data);
+int pkgmgr_client_res_create_dir(pkgmgr_client *pc, pkgmgr_res_handler event_cb, void *user_data);
 
 /**
  * @brief	Add resource path to remove
@@ -1290,7 +1288,7 @@ int pkgmgr_client_res_create_dir(pkgmgr_client *pc, pkgmgr_res_copy_handler even
  *
  * @param[in]	pc		The pointer to pkgmgr_client instance
  * @param[in]	res_path	Path of a copied resource that client want to remove
- * @return	0 if success, error code(<0) if fail\n
+ * @return	PKGMGR_R_OK if success, error code(<0) if fail\n
  * @retval	PKGMGR_R_OK	success
  * @retval	PKGMGR_R_EINVAL	invalid argument
  * @retval	PKGMGR_R_ENOMEM	out of memory
@@ -1306,13 +1304,12 @@ int pkgmgr_client_add_res_remove_path(pkgmgr_client *pc, const char *res_path);
  * @param[in]	event_cb	user callback
  * @param[in]	data		user data
  * @return	request_id (>0) if success, error code(<0) if fail\n
- * @retval	PKGMGR_R_OK	success
  * @retval	PKGMGR_R_ECOMM	communication error
  * @retval	PKGMGR_R_EINVAL	invalid argument
  * @retval	PKGMGR_R_ENOMEM	out of memory
  * @retval	PKGMGR_R_EPRIV	privilege denied
 */
-int pkgmgr_client_res_remove(pkgmgr_client *pc, pkgmgr_res_copy_handler event_cb, void *user_data);
+int pkgmgr_client_res_remove(pkgmgr_client *pc, pkgmgr_res_handler event_cb, void *user_data);
 
 /**
  * @brief	This API uninstall copied resources of the package.
