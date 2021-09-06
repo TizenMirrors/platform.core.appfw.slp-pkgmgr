@@ -24,7 +24,6 @@
 #include <gio/gio.h>
 
 #include "package-manager.h"
-#include "package-manager-types.h"
 #include "pkgmgr_client_debug.h"
 #include "pkgmgr_client_internal.h"
 #include "../../installer/pkgmgr_installer.h"
@@ -247,16 +246,19 @@ static void __handle_res_event_signal(const gchar *signal_name,
 	char *req_id;
 	char *pkgid = NULL;
 	char *status = NULL;
+	char *path = NULL;
+	pkgmgr_res_event_path_state state;
 	struct cb_info *cb_info = (struct cb_info *)user_data;
 	int signal_type;
 	GVariant *extra_param = NULL;
-	pkgmgr_res_event_info_t event_info;
+	pkgmgr_res_event_info_t *event_info;
+	GVariantIter *iter;
 
 	if (!cb_info->res_event_cb)
 		return;
 
 	g_variant_get(parameters, "(u&s&s&sv)", &target_uid, &req_id, &pkgid, &status, &extra_param);
-	if (!g_variant_type_equal(G_VARIANT_TYPE("(i)"),
+	if (!g_variant_type_equal(G_VARIANT_TYPE("(ia(si))"),
 			g_variant_get_type(extra_param))) {
 		ERR("invalid extra parameter");
 		g_variant_unref(extra_param);
@@ -275,10 +277,30 @@ static void __handle_res_event_signal(const gchar *signal_name,
 		}
 	}
 
-	g_variant_get(extra_param, "(i)", &event_info.error_code);
+	event_info = pkgmgr_res_event_info_new();
+	if (event_info == NULL) {
+		ERR("out of memory");
+		g_variant_unref(extra_param);
+		return;
+	}
+
+	g_variant_get(extra_param, "(ia(si))", &event_info->error_code, &iter);
+
+	while (g_variant_iter_loop(iter, "(&si)", &path, &state)) {
+		if (pkgmgr_res_event_info_add_path_state(event_info,
+				path, state) != PKGMGR_R_OK) {
+			ERR("Fail to add path state");
+			g_variant_unref(extra_param);
+			g_variant_iter_free(iter);
+			pkgmgr_res_event_info_free(event_info);
+			return;
+		}
+	}
 	cb_info->res_event_cb(target_uid, cb_info->req_id, pkgid, signal_name,
-			status, &event_info, cb_info->data);
+			status, event_info, cb_info->data);
 	g_variant_unref(extra_param);
+	g_variant_iter_free(iter);
+	pkgmgr_res_event_info_free(event_info);
 }
 
 static void __signal_handler(GDBusConnection *conn, const gchar *sender_name,
