@@ -55,6 +55,8 @@
 #include <stdio.h>
 #include <sys/types.h>
 
+#include <glib.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -177,11 +179,27 @@ typedef enum {
 	PM_UPDATEINFO_TYPE_OPTIONAL
 } pkgmgr_updateinfo_type;
 
+typedef enum {
+	PM_RES_EVENT_PATH_STATE_NONE = 0,
+	PM_RES_EVENT_PATH_STATE_OK,
+	PM_RES_EVENT_PATH_STATE_FAILED
+} pkgmgr_res_event_path_state;
+
 typedef struct {
 	char *pkgid;
 	char *version;
 	pkgmgr_updateinfo_type type;
 } pkg_update_info_t;
+
+typedef struct _pkgmgr_res_event_info_t {
+	int error_code;
+	GList *path_states;
+} pkgmgr_res_event_info_t;
+
+typedef struct _res_event_path_state_t {
+	const char *path;
+	pkgmgr_res_event_path_state state;
+} res_event_path_state_t;
 
 typedef int (*pkgmgr_iter_fn)(const char *pkg_type, const char *pkgid,
 				const char *version, void *data);
@@ -203,6 +221,9 @@ typedef void (*pkgmgr_total_pkg_size_info_receive_cb)(pkgmgr_client *pc,
 typedef void (*pkgmgr_res_handler)(uid_t target_uid, int req_id,
 		const char *pkgid, const char *request_type, const char *status,
 		pkgmgr_res_event_info *handle, void *user_data);
+
+typedef int (*pkgmgr_res_event_path_cb)(const char *path,
+		pkgmgr_res_event_path_state state, void *user_data);
 
 typedef enum {
 	PC_REQUEST = 0,
@@ -1352,7 +1373,7 @@ pkgmgr_res_event_info *pkgmgr_res_event_info_new();
 int pkgmgr_res_event_info_free(pkgmgr_res_event_info *info);
 
 /**
- * @brief	This API gets the error code from resource callback handle
+ * @brief	This API sets the error code to resource event info handle.
  *
  * This API is for package-manager client application.\n
  *
@@ -1361,10 +1382,11 @@ int pkgmgr_res_event_info_free(pkgmgr_res_event_info *info);
  * @retval	PKGMGR_R_OK	success
  * @retval	PKGMGR_R_EINVAL	invalid argument
 */
-int pkgmgr_res_event_info_set_error_code(pkgmgr_res_event_info *handle, int error_code);
+int pkgmgr_res_event_info_set_error_code(pkgmgr_res_event_info *handle,
+		int error_code);
 
 /**
- * @brief	This API gets the error code from resource callback handle
+ * @brief	This API gets the error code from resource event info handle.
  *
  * This API is for package-manager client application.\n
  *
@@ -1373,7 +1395,37 @@ int pkgmgr_res_event_info_set_error_code(pkgmgr_res_event_info *handle, int erro
  * @retval	PKGMGR_R_OK	success
  * @retval	PKGMGR_R_EINVAL	invalid argument
 */
-int pkgmgr_res_event_info_get_error_code(pkgmgr_res_event_info *handle, int *error_code);
+int pkgmgr_res_event_info_get_error_code(pkgmgr_res_event_info *handle,
+		int *error_code);
+
+/**
+ * @brief	This API adds the path state to resource event info handle.
+ *
+ * This API is for package-manager client application.\n
+ *
+ * @param[in]	handle		resource event information handle
+ * @param[in]	path		path related resource event
+ * @param[in]	state		state of the path
+ * @retval	PKGMGR_R_OK	success
+ * @retval	PKGMGR_R_EINVAL	invalid argument
+ * @retval	PKGMGR_R_ENOMEM	out of memory
+*/
+int pkgmgr_res_event_info_add_path_state(pkgmgr_res_event_info *handle,
+		const char *path, pkgmgr_res_event_path_state state);
+
+/**
+ * @brief	This API retrieve the path state from resource callback handle.
+ *
+ * This API is for package-manager client application.\n
+ *
+ * @param[in]	handle		resource event information handle
+ * @param[in]	callback	callback to be invoked for each retrieved path
+ * @param[in]	user_data	User data to be passed to the callback function
+ * @retval	PKGMGR_R_OK	success
+ * @retval	PKGMGR_R_EINVAL	invalid argument
+*/
+int pkgmgr_res_event_info_foreach_path(pkgmgr_res_event_info *handle,
+		pkgmgr_res_event_path_cb callback, void *user_data);
 
 /** @} */
 

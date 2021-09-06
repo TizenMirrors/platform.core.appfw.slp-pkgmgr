@@ -3059,6 +3059,17 @@ API pkgmgr_res_event_info *pkgmgr_res_event_info_new()
 	return (pkgmgr_res_event_info *)info;
 }
 
+static void __free_path_states(gpointer data)
+{
+	res_event_path_state_t *path_state = (res_event_path_state_t *)data;
+
+	if (path_state == NULL)
+		return;
+	if (path_state->path)
+		free(path_state->path);
+	free(path_state);
+}
+
 API int pkgmgr_res_event_info_free(pkgmgr_res_event_info *info)
 {
 	pkgmgr_res_event_info_t *event_info =
@@ -3069,6 +3080,8 @@ API int pkgmgr_res_event_info_free(pkgmgr_res_event_info *info)
 		return PKGMGR_R_EINVAL;
 	}
 
+	if (event_info->path_states)
+		g_list_free_full(event_info->path_states, __free_path_states);
 	free(event_info);
 
 	return PKGMGR_R_OK;
@@ -3095,5 +3108,55 @@ API int pkgmgr_res_event_info_get_error_code(pkgmgr_res_event_info *handle, int 
 	}
 
 	*error_code = info->error_code;
+	return PKGMGR_R_OK;
+}
+
+API int pkgmgr_res_event_info_add_path_state(pkgmgr_res_event_info *handle,
+		const char *path, pkgmgr_res_event_path_state state)
+{
+	pkgmgr_res_event_info_t *info = handle;
+	res_event_path_state_t *path_state;
+
+	if (info == NULL || path == NULL) {
+		ERR("invalid parameter");
+		return PKGMGR_R_EINVAL;
+	}
+
+	path_state = calloc(1, sizeof(res_event_path_state_t));
+	if (path_state == NULL) {
+		ERR("out of memory");
+		return PKGMGR_R_ENOMEM;
+	}
+
+	path_state->path = strdup(path);
+	if (path_state->path == NULL) {
+		ERR("out of memory");
+		return PKGMGR_R_ENOMEM;
+	}
+	path_state->state = state;
+
+	info->path_states = g_list_prepend(info->path_states , path_state);
+	return PKGMGR_R_OK;
+}
+
+API int pkgmgr_res_event_info_foreach_path(pkgmgr_res_event_info *handle,
+		pkgmgr_res_event_path_cb callback, void *user_data)
+{
+	pkgmgr_res_event_info_t *info = handle;
+	GList *list;
+	res_event_path_state_t *path_state;
+
+	if (info == NULL) {
+		ERR("invalid parameter");
+		return PKGMGR_R_EINVAL;
+	}
+
+	for (list = info->path_states; list != NULL; list = list->next) {
+		path_state = (res_event_path_state_t *)list->data;
+		if (callback(path_state->path, path_state->state,
+				user_data) < 0)
+			return PKGMGR_R_OK;
+	}
+
 	return PKGMGR_R_OK;
 }

@@ -1260,8 +1260,33 @@ API int pkgmgr_installer_set_is_upgrade(pkgmgr_installer *pi, int is_upgrade) {
 static GVariant *__get_gvariant_from_event_info(pkgmgr_res_event_info *event_info)
 {
 	pkgmgr_res_event_info_t *info = event_info;
+	GVariantBuilder *builder;
+	GVariant *result;
+	GList *path_states;
+	res_event_path_state_t *path_state;
 
-	return g_variant_new("(i)", info->error_code);
+	builder = g_variant_builder_new(G_VARIANT_TYPE("a(si)"));
+	if (builder == NULL) {
+		ERR("out of memory");
+		return NULL;
+	}
+
+	for (path_states = info->path_states; path_states != NULL;
+			path_states = path_states->next) {
+		path_state = (res_event_path_state_t *)path_states->data;
+		g_variant_builder_add(builder, "(si)",
+				path_state->path, path_state->state);
+	}
+
+	result = g_variant_new("(ia(si))", info->error_code, builder);
+	g_variant_builder_unref(builder);
+
+	if (result == NULL) {
+		ERR("Fail to create extra data");
+		return NULL;
+	}
+
+	return result;
 }
 
 API int pkgmgr_installer_send_res_signal(pkgmgr_installer *pi,
@@ -1271,6 +1296,7 @@ API int pkgmgr_installer_send_res_signal(pkgmgr_installer *pi,
 	char *sid;
 	const char *signal_name;
 	GError *err = NULL;
+	GVariant *extra_param;
 
 	if (!pi || !pkgid || !status) {
 		ERR("invalid argument");
@@ -1287,13 +1313,17 @@ API int pkgmgr_installer_send_res_signal(pkgmgr_installer *pi,
 		return -1;
 	}
 
+	extra_param = __get_gvariant_from_event_info(event_info);
+	if (extra_param == NULL) {
+		ERR("Fail to get extra parameter");
+		return -1;
+	}
+
 	if (g_dbus_connection_emit_signal(pi->conn, NULL,
 				PKGMGR_INSTALLER_DBUS_OBJECT_PATH,
 				PKGMGR_INSTALLER_DBUS_INTERFACE, signal_name,
 				g_variant_new("(usssv)", pi->target_uid, sid,
-						pkgid, status,
-						__get_gvariant_from_event_info(
-								event_info)),
+						pkgid, status, extra_param),
 				&err) != TRUE) {
 		ERR("failed to send dbus signal");
 		if (err) {
@@ -1319,6 +1349,7 @@ API int pkgmgr_installer_send_res_signal_for_uid(pkgmgr_installer *pi,
 	void *data;
 	void *ptr;
 	const char *signal_name;
+	GVariant *extra_param;
 
 	if (!pi || !pi->conn) {
 		ERR("connection is NULL");
@@ -1340,9 +1371,14 @@ API int pkgmgr_installer_send_res_signal_for_uid(pkgmgr_installer *pi,
 	name_size = strlen(signal_name) + 1;
 	data_len += name_size;
 
+	extra_param = __get_gvariant_from_event_info(event_info);
+	if (extra_param == NULL) {
+		ERR("Fail to get extra parameter");
+		return -1;
+	}
+
 	gv = g_variant_new("(usssv)", pi->target_uid, sid,
-			pkgid, status,
-			__get_gvariant_from_event_info(event_info));
+			pkgid, status, extra_param);
 	if (gv == NULL) {
 		ERR("failed to create GVariant instance");
 		return -1;
