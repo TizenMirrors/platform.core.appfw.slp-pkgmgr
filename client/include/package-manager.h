@@ -197,7 +197,7 @@ typedef struct _pkgmgr_res_event_info_t {
 } pkgmgr_res_event_info_t;
 
 typedef struct _res_event_path_state_t {
-	const char *path;
+	char *path;
 	pkgmgr_res_event_path_state state;
 } res_event_path_state_t;
 
