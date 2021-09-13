@@ -3131,6 +3131,7 @@ API int pkgmgr_res_event_info_add_path_state(pkgmgr_res_event_info *handle,
 	path_state->path = strdup(path);
 	if (path_state->path == NULL) {
 		ERR("out of memory");
+		free(path_state);
 		return PKGMGR_R_ENOMEM;
 	}
 	path_state->state = state;
