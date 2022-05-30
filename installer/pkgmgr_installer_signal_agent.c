@@ -47,7 +47,7 @@
 #define PWBUFSIZE sysconf(_SC_GETPW_R_SIZE_MAX)
 #define APPFW_USERNAME "app_fw"
 
-static int server_fd;
+static int server_fd = -1;
 static GMainLoop *loop;
 static guint sid;
 static guint tid;
@@ -311,10 +311,14 @@ static int __init(void)
 
 static void __fini(void)
 {
-	g_source_remove(sid);
-	g_main_loop_unref(loop);
-	g_object_unref(conn);
-	close(server_fd);
+	if (sid > 0)
+		g_source_remove(sid);
+	if (loop)
+		g_main_loop_unref(loop);
+	if (conn)
+		g_object_unref(conn);
+	if (server_fd > 0)
+		close(server_fd);
 }
 
 int main(int argc, char *argv[])
